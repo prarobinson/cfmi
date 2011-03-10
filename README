@@ -1,0 +1,13 @@
+Quick Start:
+
+git clone http://github.com/nocko/cfmi.git
+virutalenv cfmi
+cd cfmi
+source ./bin/activate
+find . -name requirements.txt -exec pip install -r {} \;
+
+
+Development servers can be started by typing:
+ python <project_dir>
+
+Happy Hacking
