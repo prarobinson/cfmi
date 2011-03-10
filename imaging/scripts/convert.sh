@@ -1,0 +1,301 @@
+#!/bin/bash
+
+#######################################################################################################
+# What up? This script is designed to convert a subject's dicom (.IMA) images to nii${gzflag}. It takes two
+# mandatory arguments: subject id and output directory. It will make subject-specific folders, so the 
+# output directory need only be at the study or group level:
+#
+# >convert.sh Alc45 /exports/cfmi4/home/robinson/Subject_Data/AlcoholStudy/    
+#
+# The above will try to find and convert ALL of that subject's images, but you can also supply 
+# optional parameters - type=[image_type] and/or gz=[TRUE/FALSE] - if you just want to convert a particular
+# subset of images or wish to have nii.gz images as output:
+#
+# >convert.sh Alc45 /exports/cfmi4/home/robinson/Subject_Data/test type=epi
+#
+########################################################################################################
+
+### Play nice!
+
+renice 19 -p $$
+
+# Let's make sure there are at least the two mandatory args:
+if [ $# -lt 2 ]; then
+  echo 'Please supply at least the subject id and output directory:'
+  echo '  e.g., >convert.sh Alc45 /exports/cfmi4/home/robinson/Subject_Data/Alcohol_Study/   -or-'
+  echo '        >convert.sh Alc45 /exports/cfmi4/home/robinson/Subject_Data/Alcohol_Study/ type=t1 '
+  echo 'Valid types are: t1, mprage, dti, asl, etc.. it is fairly forgiving :)'
+  echo 'This will create a sub-directory in your output directory with the name of the subject id, and append dates and run numbers to each converted image file:' 
+  echo '  ~/Subject_Data/Alcohol_Study/Alc45/Siemens_AF8-MPRAGE_PreGelatin_20101001_1.nii' 
+  exit
+fi
+
+# Here we'll parse the arguments so we can set the imagetype and gz flags if provided:
+# Let's default to no .gz
+gzflag=""
+isgz="N"
+
+for param in $@; do
+  argistype=`echo ${param} | grep "type"`
+  if [ "${argistype}" != "" ]; then
+    imgtype=`echo ${param} | awk -F"=" '{print$2}'`
+  else
+    gztype=`echo ${param} | awk -F"=" '{print$2}'`
+    if [ "${gztype}" == "TRUE" ]; then
+      gzflag=".gz"
+      isgz="Y"
+    fi
+  fi
+done
+
+
+echo ${FREESURFER_HOME}
+which mri_convert
+
+subjid=${1}
+outdir=${2}
+
+# Get the paths and scan names for this subject, if they exist
+echo "Getting image info for ${subjid}..."
+paths=(`curl -k https://imaging.cfmi.georgetown.edu/api/path/${subjid}`)
+if [ "$paths[0]" = '<!DOCTYPE' ]; then
+  echo "No data found for subject ${subjid}...exiting"
+else
+  if [ ! -e ${outdir}${subjid} ]; then
+    mkdir ${outdir}${subjid}
+  fi 
+  if [ ! -e /tmp/${subjid} ]; then
+    mkdir /tmp/${subjid}
+  fi
+  for imgpath in ${paths[*]}; do
+    firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
+    imgfiles=(${imgfiles[*]} ${firstfile})
+    rootname=`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+    datestring=`echo ${imgpath} | awk -F"/" '{print $8 $9 $10}'`
+    nameNdate="${rootname}_${datestring}"
+    imgnames=(${imgnames[*]} ${nameNdate})
+  done
+
+  # This just helps keep track of multiple runs having the same name on the same date. 
+  ord=1
+  
+  # Next, let's separate the images by type, making ordinal arrays for each:
+  for i in `seq 0 $((${#imgfiles[*]} - 1))`; do
+    is_t1=`echo ${imgnames[$i]} | grep MPRAGE`
+    if [ "${is_t1}" != "" ]; then 
+      T1s=(${T1s[*]} ${i})
+      continue
+    fi 
+    is_dti=`echo ${imgnames[$i]} | grep diff`
+    if [ "${is_dti}" != "" ]; then
+      DTIs=(${DTIs[*]} ${i}) 
+      continue
+    fi
+    is_asl=`echo ${imgnames[$i]} | grep asl`
+    if [ "${is_asl}" != "" ]; then
+      ASLs=(${ASLs[*]} ${i}) 
+      continue
+    fi
+    is_epi=`echo ${imgnames[$i]} | grep ep`
+    if [ "${is_epi}" != "" ]; then
+      otherEPIs=(${otherEPIs[*]} ${i})
+      continue
+    fi
+    is_pdt2=`echo ${imgnames[$i]} | grep PD-T2`
+    if [ "${is_pdt2}" != "" ]; then
+      PDT2s=(${PDT2s[*]} ${i})
+      continue
+    fi
+    is_pd=`echo ${imgnames[$i]} | grep PD`
+    if [ "${is_pd}" != "" ]; then
+      PDs=(${PDs[*]} ${i})
+    fi
+    is_flair=`echo ${imgnames[$i]} | grep FLAIR`
+    if [ "${is_flair}" != "" ]; then
+      FLAIRs=(${FLAIRs[*]} ${i})
+    fi
+    is_field=`echo ${imgnames[$i]} | grep field`
+    if [ "${is_field}" != "" ]; then
+      FIELDs=(${FIELDs[*]} ${i})
+    fi
+  done
+
+  if [ "${imgtype}" != "" ]; then
+    case ${imgtype} in
+      "t1"|"T1"|"MPRAGE"|"mprage")
+        modality3D=(${T1s[*]})
+    ;;
+      "PD"|"pd")
+        modality3D=(${PDs[*]})
+    ;;
+      "flair"|"FLAIR")
+        modality3D=(${FLAIRs[*]})
+    ;;
+      "dti"|"DTI"|"diff")
+        modality4D=(${DTIs[*]})
+    ;;
+      "field"|"FIELD"|"fields"|"FIELDS"|"fieldmap"|"FIELDMAP")
+        modality3D=(${FIELDs[*]})
+    ;;
+      "asl"|"ASL"|"casl"|"CASL"|"pasl"|"PASL"|"pcasl"|"PCASL")
+        modality4D=(${ASLs[*]})
+    ;;
+      "epi"|"EPI"|"fmri"|"fMRI"|"rest"|"ep2d")
+        modality4D=(${otherEPIs[*]})
+    ;;
+      "pdt2"|"PDT2"|"pd-t2"|"PD-T2")
+        # Both PD and T1 slices are in the same directory, so they must be handled slightly differently:      
+        for pdt2 in ${PDT2s[*]}; do
+          echo "Converting ${paths[${pdt2}]}/1.ACQ/"
+          if [ -e ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag} ]; then
+            ord=$((${ord} + 1))
+          else
+            ord=1
+          fi
+          files=(`ls ${paths[${pdt2}]}/1.ACQ/`) 
+          counter=0
+          for file in ${files[*]}; do 
+            ln -s ${paths[${pdt2}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+            counter=$((${counter} + 1))
+          done
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+          #mri_convert ${paths[${t1}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${t1}]}_${ord}.nii${gzflag} 
+          mv /tmp/${subjid}/o0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+          mv /tmp/${subjid}/o1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+          rm /tmp/${subjid}/* 
+        done
+    ;;
+    esac
+    
+    for j in ${modality3D[*]}; do
+      echo "Converting ${paths[${j}]}/1.ACQ/"
+      if [ -e ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag} ]; then
+        ord=$((${ord} + 1))
+      else
+        ord=1
+      fi
+      files=(`ls ${paths[${j}]}/1.ACQ/`) 
+      counter=0
+      for file in ${files[*]}; do 
+        ln -s ${paths[${j}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+        counter=$((${counter} + 1))
+      done
+      dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+      #mri_convert ${paths[${j}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag} 
+      niis=(`ls /tmp/${subjid}/ | grep "^[0-9]*.nii"`)
+      if [ ${#niis[*]} == 1 ]; then
+        mv -v /tmp/${subjid}/${niis[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag}
+      #else
+      #  is_field=`echo ${imgnames[$j]} | grep field`
+      #  if [ "${is_field}" != "" ]; then
+      #    type=`
+      #    
+      #    mv -v /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${ord}_echo1.nii${gzflag}
+      #    mv -v /tmp/${subjid}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${ord}_echo2.nii${gzflag}
+      #  fi
+      fi   
+      
+      rm /tmp/${subjid}/* 
+    done
+      
+    for k in ${modality4D[*]}; do
+      files=(`ls ${paths[${k}]}/1.ACQ/`)
+      if [ ${#files[*]} == 1 ]; then
+        is_MOCO=`strings ${paths[${k}]}/1.ACQ/*.IMA | grep MOCO`
+        if [ "${is_MOCO}" == "" ]; then
+          if [ -e ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag} ]; then
+            ord=$((${ord} + 1))
+          else
+            ord=1
+          fi
+          for vol in `ls ${paths[${k}]}`; do
+            ln -s ${paths[${k}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
+          done
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
+          #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
+            mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bvec
+            mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bval
+          fi
+          rm /tmp/${subjid}/*
+        else
+          echo "${imgnames[${k}]} has a MOCO series associated with it... NOT converting the MOCO series."
+        fi
+      else
+        echo "Multiple files found in ${paths[${k}]}."
+        echo "For imgtype DTI this is probably just an FA or other computed map - skipping."
+      fi
+    done
+  else
+ ####### Convert all images if imgtype is not set: ###########################################################
+    echo "No image type specified (dti, t1, etc.,): converting all images for subject ${subjid}."
+    for l in ${T1s[*]} ${PDs[*]} ${FLAIRs[*]}; do
+      echo "Converting ${paths[${l}]}/1.ACQ/"
+      if [ -e ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} ]; then
+        ord=$((${ord} + 1))
+      else
+        ord=1
+      fi
+      files=(`ls ${paths[${l}]}/1.ACQ/`) 
+      counter=0
+      for file in ${files[*]}; do 
+        ln -s ${paths[${l}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+        counter=$((${counter} + 1))
+      done
+      dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+      #mri_convert ${paths[${l}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} 
+      if [ -e /tmp/${subjid}/o0.nii${gzflag} ]; then
+        mv -v /tmp/${subjid}/o0.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
+      else
+        mv -v /tmp/${subjid}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
+      fi
+      rm /tmp/${subjid}/*
+    done
+    for pdt2 in ${PDT2s[*]}; do
+      echo "Converting ${paths[${pdt2}]}/1.ACQ/"
+      if [ -e ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag} ]; then
+        ord=$((${ord} + 1))
+      else
+        ord=1
+      fi
+      files=(`ls ${paths[${pdt2}]}/1.ACQ/`) 
+      counter=0
+      for file in ${files[*]}; do 
+        ln -s ${paths[${pdt2}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+        counter=$((${counter} + 1))
+      done
+      dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+      #mri_convert ${paths[${t1}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${t1}]}_${ord}.nii${gzflag} 
+      mv /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+      mv /tmp/${subjid}/1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+      rm /tmp/${subjid}/* 
+    done
+    for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
+      files=(`ls ${paths[${m}]}/1.ACQ/`)
+      if [ ${#files[*]} == 1 ]; then
+        if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
+          ord=$((${ord} + 1))
+        else
+          ord=1
+        fi
+        for vol in `ls ${paths[${m}]}`; do
+          ln -s ${paths[${m}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
+        done
+        dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
+        #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+        mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+        if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
+          mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
+          mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+        fi
+        rm /tmp/${subjid}/*
+      else
+        echo "Multiple files found in ${paths[${m}]}."
+        echo "For imgtype DTI this is probably just an FA or other computed map - skipping."
+      fi
+    done 
+  fi
+fi  
+  
+rm -r /tmp/${subjid}/

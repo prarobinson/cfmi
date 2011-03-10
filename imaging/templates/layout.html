@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" 
+      href="/static/blueprint/screen.css" 
+      type="text/css" 
+      media="screen, projection" />
+<link rel="stylesheet" 
+      href="/static/blueprint/print.css" 
+      type="text/css"
+      media="print" />
+<link rel="stylesheet"
+      href="/static/imaging.css"
+      type="text/css" />
+<!--[if lt IE 8]>
+  <link rel="stylesheet" 
+        href="/static/blueprint/ie.css" 
+        type="text/css" media="screen, projection" />
+<![endif]-->
+<script type="text/javascript"
+        src="/static/jquery-1.5.min.js"></script>
+<script type="text/javascript"
+        src="/static/imaging.js"></script>
+<title>CFMI ImageHost - {% block title %}{% endblock %}</title>
+{% block javascript %}
+{% endblock %}
+</head>
+<body>
+<div class="container">
+  <div class="span-24 last" id="header">
+    <img id="cfmilogo" src="/static/logo.png" alt="CFMI Logo"></img>
+    <span id="logotext">ImageHost</span>
+  </div>
+  <div class="span-24 last" id="content">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="info">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% block content %}
+    <div id="projects" class="span-11 box content">
+      <dl>
+      {% for project in g.user.get_projects() %}
+      <dt><a href="javascript:void true;">{{ project.shortname() }}</a></dt>
+      <dd>
+        <div id="project_{{ project.id }}">
+          <ul>
+          </ul>
+        </div>
+      </dd>
+      {% endfor %}
+      </dl>
+    </div>
+    <div id="subject_container" class="span-12 last">
+      <div id="series_detail" class="box content">
+        <p>Date: <span id="date"></span></p>
+        <p>Program: <span id="program"></span></p>
+      </div>
+      <div id="subject_detail" class="box content">
+        <p>Name: <span id="subject_name"></span></p>
+        <p><span id="subject_download"></span></p>
+        <div id="subject_series">
+        </div>
+      </div>
+      <div id="logout">
+        <form action="/logout" method="GET" id="logoutform">
+          <input
+             type="submit"
+             id="logoutbutton"
+             class="button box"
+             value="Logout from {{ g.user.name }}" />
+        </form>
+      </div>
+    </div>
+    {% endblock %}
+  </div>
+</div>
+</body>
+</html>

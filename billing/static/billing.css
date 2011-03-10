@@ -1,0 +1,33 @@
+textarea {
+    width: 600px;
+}
+
+h1 {
+    margin:0;
+}
+
+.return-link {
+    float:right;
+}
+
+label {
+    float: left;
+    text-align: right;
+    margin-right: 1em;
+    width: 10em;
+}
+
+form div {
+    margin: 0.5em;
+    float: left;
+    width: 100%;
+}
+
+form input[type="submit"] {
+    margin-top: 1em;
+    margin-left: 9em;
+}
+
+#correction {
+    text-align:center;
+}

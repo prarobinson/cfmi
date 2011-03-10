@@ -1,0 +1,10 @@
+bin
+lib
+*pyc
+lib64
+src
+include
+share
+imaging/dicom
+imaging/settings.py
+billing/settings.py

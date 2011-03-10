@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}Billing Login{% endblock %}
+
+{% block content %}
+<div id="login_box" class="span-6 last box">
+<form action="" method="post">
+<label for="id_username">Username</label>
+<input id="id_username" type="text" maxlength="30" name="username">
+<br />
+<label for="id_password">Password</label>
+<input id="id_password" type="password" name="password">
+
+<input class="submit" type="submit" value="Login">
+<form>
+<div>
+{% endblock %}

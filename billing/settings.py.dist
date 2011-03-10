@@ -1,0 +1,24 @@
+## Billing App Settings
+
+SQLALCHEMY_DATABASE_URI = \
+    ''
+
+
+## Flask Settings
+
+SECRET_KEY = ''
+DEBUG = True
+
+
+## File Paths
+BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
+TEMPLATE_PATHS = [BASE_PATH+"/templates"]
+
+## Email Settings
+EMAIL_FROM = "imaging@cfmi.georgetown.edu"
+EMAIL_REPLY_TO = "sn253@georgetown.edu"
+
+
+## URL Settings
+URL_BASE = "http://localhost:5000/"
+ARCHIVE_DOWNLOAD_URL = URL_BASE + "download/"

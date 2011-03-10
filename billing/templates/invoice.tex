@@ -1,0 +1,35 @@
+\documentclass{letter}
+\usepackage[left=2.5cm,right=1.85cm,top=2.5cm,bottom=2cm,noheadfoot]{geometry}
+\pagestyle{empty}
+\usepackage{pdflscape}
+\usepackage{longtable}
+\begin{document}
+\begin{landscape}
+{% for project in pi.pi_projects %}
+\address{CFMI \\ Preclinical Sciences Bld. LM-14 \\ 3900 Reservior Rd NW \\ Washington, DC 20057 }
+\telephone{202-687-3592}
+\begin{letter}{ {{ pi.name }} {% if project.address %} 
+      \\ {{ project.address }}  {% endif %} }
+{% if project.invoice_scans(date.year, date.month) %}
+\opening{}
+\textsc{\LARGE Scanning Fees: {{ date|datef("%b %Y") }} } \\
+Project: {{ project.name }}\\
+{% if project.rx_num %}RX Number: {{ project.rx_num }}{% endif %}
+\begin{longtable}{ | c | c | c | c || r | }
+  \hline
+  Date & Subject & RA & Duration & Cost \\ \hline \hline
+  {% for scan in project.invoice_scans(date.year, date.month) %}
+    {{ scan.sched_start|datef }} - {{ scan.sched_end|datef("%H:%M") }} &
+    {{ scan.subject }} &
+    {{ scan.user }} &
+    {{ scan.dur_hours() }} hrs. &
+    \${{ scan.cost() }} \\ \hline
+  {% endfor %}
+    &&& Total & \${{ project.invoice_scans_total(date.year, date.month) }} \\ \hline
+\end{longtable}
+
+{% endif %}
+\end{letter}
+{% endfor %}
+\end{landscape}
+\end{document}

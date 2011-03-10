@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div id="primary_nav" class="span-12">
+  <div id="invoice_generate_form">
+    <form action="#" method="post">
+      {{ invoice_select }}
+      <input type="submit" value="Run Billing" />
+    </form>
+  </div>
+  <div id="unpaid_bills">
+    <h3><a href="#">Outstanding invoices</a>:</h3>
+    <ul>
+      {% for invoice in due %}
+      <li><a href="{{ url_for('invoice', id=invoice.id) }}">
+          {{ invoice.project }} - {{ invoice.date|datef("%b %Y") }}
+          ({{ invoice.project.pi.username }})</a>
+        {% endfor %}
+    </ul>
+  </div>
+  <div id="stats">
+    <h3>Last Month:</h3> {{ last_month }}
+    <h3>Year-to-Date:</h3> {{ YTD }}
+  </div>
+  <div id="graphs" />
+</div>
+</div>
+
+<div id="browse" class="span-12 last">
+  <h3>By PI / Project</h3>
+  {% for pi in active_pis %}
+  {% if pi.invoices() %}
+  <a href="#">
+    {{ pi.name }}
+  </a>
+  <ul>
+    {% for invoice in pi.invoices() %}
+    <li><a href="{{ url_for('pi_month_view', pi_uname=invoice.project.pi.username, year=invoice.date.year, month=invoice.date.month) }}">
+        {{ invoice.date|datef("%b %Y") }}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

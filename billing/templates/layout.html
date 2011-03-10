@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" 
+      href="/static/blueprint/screen.css" 
+      type="text/css" 
+      media="screen, projection" />
+<link rel="stylesheet" 
+      href="/static/blueprint/print.css" 
+      type="text/css"
+      media="print" />
+<link rel="stylesheet"
+      href="/static/billing.css"
+      type="text/css" />
+<!--[if lt IE 8]>
+  <link rel="stylesheet" 
+        href="/static/blueprint/ie.css" 
+        type="text/css" media="screen, projection" />
+<![endif]-->
+<title>CFMI Billing - {% block title %}{% endblock %}</title>
+</head>
+<body>
+<div class="container">
+  <div class="span-24 last" id="header">
+    {% block header %}
+    {% endblock %}
+  </div>
+  <div class="span-24 last" id="content">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="info">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% block content %}
+    {% if g.user %}
+    <h1>Welcome, {{ g.user.name }}!</h1>
+    {% endif %}
+    {% endblock %}
+  </div>
+</div>
+</body>
+</html>

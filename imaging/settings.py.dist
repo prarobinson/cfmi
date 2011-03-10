@@ -1,0 +1,37 @@
+import os
+
+## Database Settings
+
+# SqlAlchemy String used to access the Newsite database
+NEWSITE_DB_STRING = \
+    ''
+
+# SqlAlchemy String used to access the Dicom database
+DICOM_DB_STRING = \
+    ''
+
+
+## Flask Settings
+
+SECRET_KEY = ''
+DEBUG = True
+
+
+## File Paths
+BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
+TEMPLATE_PATHS = [BASE_PATH+"/templates"]
+TMP_PATH = '/tmp/'
+DICOM_ARCHIVE_FOLDER = BASE_PATH+'/dicom/'
+
+## Max number of archiving processes
+ARCHIVE_PROCESSES = 5 
+
+
+## Email Settings
+EMAIL_FROM = "imaging@cfmi.georgetown.edu"
+EMAIL_REPLY_TO = "sn253@georgetown.edu"
+
+
+## URL Settings
+URL_BASE = "http://localhost:5000/"
+ARCHIVE_DOWNLOAD_URL = URL_BASE + "download/"

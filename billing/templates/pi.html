@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% for inv in invoices %}
+<div>
+{{ inv }}
+</div>
+{% endfor %}
+{% endblock content %}

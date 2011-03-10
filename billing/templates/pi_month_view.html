@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Invoice - {{ pi.name }} - {{ date|datef("%b %Y")}}{% endblock %}
+
+{% block content %}
+<div class="span-24 last">
+<h1>Invoice: {{ pi.name }}'s Group</h1>
+<em>{{ date|datef("%b %Y") }}</em>
+<hr />
+<table class="invoice">
+<tr>
+  <td>Session</td>
+  <td>Project</td>
+  <td>Subject ID</td>
+  <td>Scheduled By:</td>
+  <td>Duration</td>
+  <td>Cost</td>
+</tr>
+{% for project in pi.pi_projects %}
+{% for scan in project.invoice_scans(date.year, date.month) %}
+<tr>
+  <td>
+    <a href="{{ url_for('edit_session', id=scan.id) }}">
+      {{ scan.sched_start|datef }} - {{ scan.sched_end|datef("%H:%M") }}</a>
+  </td>
+  <td>{{ scan.project.shortname() }}</td>
+  <td>{{ scan.subject.name }}</td>
+  <td>{{ scan.user.username }}</td>
+  <td>{{ scan.dur_hours() }} hrs. 
+    {% if scan.is_corrected() %}
+    <a href="{{ url_for('problem', id=scan.id) }}">*</a>{% endif %}</td>
+  <td>{{ scan.cost() }} USD </td>
+</tr>
+{% endfor %}
+{% endfor %}
+<tr>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td>Total Cost:</td>
+  <td>{{ total }} USD </td>
+</tr>
+</table>
+</div>
+{% endblock %}
