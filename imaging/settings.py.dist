@@ -4,11 +4,11 @@ import os
 
 # SqlAlchemy String used to access the Newsite database
 NEWSITE_DB_STRING = \
-    ''
+    'sqlite:///'
 
 # SqlAlchemy String used to access the Dicom database
 DICOM_DB_STRING = \
-    ''
+    'sqlite:///'
 
 
 ## Flask Settings

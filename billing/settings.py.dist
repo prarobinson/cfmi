@@ -1,8 +1,11 @@
+import os
 ## Billing App Settings
 
-SQLALCHEMY_DATABASE_URI = \
-    ''
+DICOM_DB_STRING = \
+    'sqlite:///'
 
+NEWSITE_DB_STRING = \
+    'sqlite://'
 
 ## Flask Settings
 
@@ -15,7 +18,7 @@ BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
 TEMPLATE_PATHS = [BASE_PATH+"/templates"]
 
 ## Email Settings
-EMAIL_FROM = "imaging@cfmi.georgetown.edu"
+EMAIL_FROM = "billing@cfmi.georgetown.edu"
 EMAIL_REPLY_TO = "sn253@georgetown.edu"
 
 
