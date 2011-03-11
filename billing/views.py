@@ -5,19 +5,14 @@ from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
     flash, send_file, escape)
 
-from common.database.newsite import (
-    Project, User, Problem, Invoice, Session)
+from cfmi.billing import app, newsite, cfmiauth
 
-from billing import app
-from billing.utils import (total_ytd, total_last_month)
 
-import common.cfmiauth
-from common.cfmiauth import (
-    login_required, authorized_users_only)
-common.cfmiauth.register(app)
+from cfmi.billing.utils import (
+    total_ytd, total_last_month, active_pis, due_invoices, limit_month)
 
 from formalchemy import FieldSet
-from billing.forms import ROSessionForm, SessionForm, ProblemForm
+from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm
 
 
 ## Filters
@@ -30,7 +25,7 @@ def datef(value, format='%m/%d/%Y %H:%M'):
 def before_request():
     g.user = None
     if 'user_id' in session:
-        g.user = User.query.get(session['user_id'])
+        g.user = newsite.User.query.get(session['user_id'])
 
 ## Views
 
@@ -44,14 +39,17 @@ def index():
 
 @app.route('/invoice/<id>')
 def invoice(id):
-    inv = Invoice.query.get_or_404(id)
+    inv = newsite.Invoice.query.get(id)
+    if not inv:
+        abort(404)
     return inv.render_html()
 
 @app.route('/<pi_uname>/<int:year>/<int:month>/')
-@login_required
+@cfmiauth.login_required
 def pi_month_view(pi_uname, year, month):
-    pi = User.query.filter(User.username==pi_uname).first_or_404()
-    
+    pi = newsite.User.query.filter(newsite.User.username==pi_uname).first()
+    if not pi:
+        abort(404)
     if 'format' in request.args:
         if request.args['format'] == 'tex':
             return render_template('invoice.tex', pi=pi,
@@ -69,8 +67,8 @@ def pi_month_view(pi_uname, year, month):
 
     mindate = date(year, month, 1)
     
-    query = Session.query.join(Project).filter(
-        Project.pi==pi)
+    query = newsite.Session.query.join(newsite.Project).filter(
+        newsite.Project.pi==pi)
     scans = limit_month(query, year, month)
     
     total = sum(float(scan.cost()) for scan in scans)
@@ -79,9 +77,11 @@ def pi_month_view(pi_uname, year, month):
                            date=mindate, total=total)
 
 @app.route('/session/<int:id>/', methods=['GET', 'POST'])
-@login_required
+@cfmiauth.login_required
 def edit_session(id):
-    scan = Session.query.get_or_404(id)
+    scan = newsite.Session.query.get(id)
+    if not scan:
+        abort(404)
     fs = SessionForm().bind(scan, data=request.form or None)
     if request.method=='POST' and fs.validate():
         if not g.user.is_superuser():
@@ -89,59 +89,63 @@ def edit_session(id):
             return redirect(request.url)
         fs.sync()
         try:
-            db.session.commit()
-            flash("Sucess: Session Modified")
+            newsite.db_session.commit()
+            flash("Sucess: newsite.Session Modified")
         except:
             flash("Failed to update database")
-            db.session.rollback()
+            newsite.db_session.rollback()
         return redirect(request.url)
         
     return render_template('scan_form.html', scan=scan,
                            form=fs)
 
 @app.route('/scan/<int:id>/problem/delete/')
-@login_required
+@cfmiauth.login_required
 def del_problem(id):
     if not g.user.is_superuser():
         abort(403)
-    scan = Session.query.get_or_404(id)
+    scan = newsite.Session.query.get(id)
+    if not scan:
+        abort(404)
     prob = scan.problem
     if not scan.problem:
         abort(404)
     try:
-        db.session.delete(prob)
-        db.session.commit()
+        newsite.db_session.delete(prob)
+        newsite.db_session.commit()
         flash("Removed billing correction")
     except:
-        db.session.rollback()
+        newsite.db_session.rollback()
         flash("Database error")
     return redirect(url_for('edit_session', id=id))   
         
 @app.route('/scan/<int:id>/problem/', methods=['GET', 'POST'])
-@login_required
+@cfmiauth.login_required
 def problem(id):
     if not g.user.is_superuser():
         abort(403)
 
-    scan = Session.query.get_or_404(id)
-    prob = scan.problem if scan.problem else Problem(scan)
+    scan = newsite.Session.query.get(id)
+    if not scan:
+        abort(404)
+    prob = scan.problem if scan.problem else newsite.Problem(scan)
     # Lame ass formalchemy cannot handle a pending object
     # without id. Check for this and remove it from the scan
     # if needed
-    if prob in db.session and not prob.id:
-        db.session.expunge(prob)
+    if prob in newsite.db_session and not prob.id:
+        newsite.db_session.expunge(prob)
     fs = ProblemForm().bind(prob, data=request.form or None)
     if request.method=='POST' and fs.validate():
         fs.sync()
         try:
             prob.scan = scan
-            db.session.add(prob)
-            db.session.commit()
+            newsite.db_session.add(prob)
+            newsite.db_session.commit()
             flash("Sucess: Problem added or modified")
             return redirect(url_for('edit_session', id=id))
         except:
             flash("Failed: Could not update database")
-            db.session.rollback()
+            newsite.db_session.rollback()
 
     return render_template('problem_form.html', scan=scan,
                            form=fs)

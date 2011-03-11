@@ -1,4 +1,6 @@
 import pam
+from calendar import monthrange
+from datetime import date, timedelta
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref, sessionmaker
@@ -7,41 +9,61 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String, Boolean, 
                         DateTime, Numeric, Text, Float, Date)
 
-import settings
+from flask import render_template
 
-engine = create_engine(settings.NEWSITE_DB_STRING, pool_recycle=300)
-db_session = scoped_session(sessionmaker(bind=engine,autocommit=False,
-                                      autoflush=False))
 Base = declarative_base()
-Base.query = db_session.query_property()
 
-## Utility Functions
+class Newsite:
+    def __init__(self, app=None, db_string=None):
+        if not app or db_string:
+            raise RuntimeError("Either a Flask app or db_string must be provided")
+        if app:
+            self.app = app
+            self.app.config.setdefault('NEWSITE_DB_STRING', 'sqlite:///')
+            engine = create_engine(app.config['NEWSITE_DB_STRING'],
+                                   pool_recycle=300)
+        if db_string:
+            engine = create_engine(db_string,
+                                   pool_recycle=300)
 
-def cleanup_session():
-    db_session.remove()
+        self.db_session = scoped_session(sessionmaker(bind=engine,autocommit=False,
+                                      autoflush=False))
+       
+        Base.query = self.db_session.query_property()
 
-## Models
+        @app.after_request
+        def after_request(response):
+            self.db_session.remove()
+            return response
+
+        self.User = User
+        self.Project = Project
+        self.Subject = Subject
+        self.Session = Session
+        self.Problem = Problem
+        self.Invoice = Invoice
 
 users_assoc_table = Table(
     'Projects2Users', Base.metadata,
     Column('User_ID', Integer, 
-              ForeignKey('billing_users.id')),
+           ForeignKey('billing_users.id')),
     Column('Project_ID', Integer, 
-              ForeignKey('billing_projects.id')))
+           ForeignKey('billing_projects.id')))
 
 class User(Base):
     __tablename__ = 'billing_users'
     id = Column(Integer, primary_key=True)
     username = Column(String(255), unique=True, index=True)
-    
+
     # Optional Biographical Data
     name = Column(String(255), default='')
     email = Column(String(255), default='')
     phone = Column(String(20), default='')
     permission_level = Column(Integer)
-    
+
     def __repr__(self):
-        return "<User: {0}>".format(self.name if self.name else self.username)
+        return "<User: {0}>".format(
+            self.name if self.name else self.username)
 
     def is_superuser(self):
         return True if self.permission_level == 3 else False
@@ -56,14 +78,14 @@ class User(Base):
 
     def auth(self, password):
         return pam.authenticate(self.username, password)
-    
+
     def invoices(self):
         queryset = Invoice.query.join(Project).filter(Project.pi==self)
         if len(queryset.all()):
             return queryset
         return False
 
-    
+
 class Project(Base):
     __tablename__ = 'billing_projects'
     id = Column(Integer, primary_key=True)
@@ -81,9 +103,9 @@ class Project(Base):
     pi = relationship(User, backref=backref(
             'pi_projects', order_by=name))
     users = relationship(User, secondary=users_assoc_table, 
-                            backref=backref('projects', 
-                                               order_by=name))
-    
+                         backref=backref('projects', 
+                                         order_by=name))
+
     def __repr__(self):
         return self.shortname()
 
@@ -125,7 +147,7 @@ class Subject(Base):
     name = Column(String(255))
     project_id = Column(Integer, ForeignKey(
             'billing_projects.id'))
-    
+
     project = relationship(Project, backref=backref(
             'subjects', order_by=name))
 
@@ -144,9 +166,9 @@ class Session(Base):
     approved = Column(Boolean)
     cancelled = Column(Boolean)
     project_id = Column(Integer, 
-                           ForeignKey('billing_projects.id'))
+                        ForeignKey('billing_projects.id'))
     subject_id = Column(Integer, 
-                           ForeignKey('billing_subjects.id'))
+                        ForeignKey('billing_subjects.id'))
     start = Column(DateTime)
     end = Column(DateTime)
     notes = Column(Text)
@@ -208,7 +230,7 @@ class Problem(Base):
     __tablename__='Problems'
     id = Column(Integer, primary_key=True)
     session_id = Column(Integer, 
-                           ForeignKey('billing_sessions.id'))
+                        ForeignKey('billing_sessions.id'))
     description = Column(String(255))
     duration = Column(Float)
 
@@ -225,15 +247,16 @@ class Invoice(Base):
     __tablename__='billing_invoices'
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, 
-                           ForeignKey('billing_projects.id'))
+                        ForeignKey('billing_projects.id'))
     date = Column(Date)
     reconciled = Column(Boolean)
-    
+
     project = relationship(Project, backref=backref('invoices', 
-                                                          order_by=date))
-    
+                                                    order_by=date))
+
     def __repr__(self):
-        return "<Invoice: {0}, {1}>".format(self.project.shortname, self.date)
+        return "<Invoice: {0}, {1}>".format(
+            self.project.shortname, self.date)
 
     def scans(self):
         """ Invoice.sessions(): Returns all trackable sesion for
@@ -250,11 +273,11 @@ class Invoice(Base):
                 Session.approved==True).filter(
                     Session.cancelled==False).order_by(
                     Session.sched_start).all()
-    
+
     def render_html(self):
         return render_template('invoice.html', 
                                invoice=self,
-                               total=self.total())
+                                   total=self.total())
 
     def render_tex(self):
         return render_template('invoice.tex', 
@@ -264,8 +287,8 @@ class Invoice(Base):
 
     def render_pdf(self):
         tex = self.render_tex()
-        path = '/tmp/invoice-%s_%s-%s' % (self.project.pi, 
-                                          self.project[:-3], month, year)
+        path = '/tmp/invoice-%s_%s-%s' % (
+            self.project.pi, self.project[:-3], month, year)
         tmpfile = open(path+'.tex', 'w')
         tmpfile.write(tex)
         tmpfile.close()

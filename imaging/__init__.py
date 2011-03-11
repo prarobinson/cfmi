@@ -1,11 +1,17 @@
+import settings
 from flask import Flask
 
 app = Flask(__name__)
-app.config.from_object('imaging.settings')
+app.config.from_object('cfmi.imaging.settings')
 
-from flaskext.sqlalchemy import SQLAlchemy
+from cfmi.common.database import Dicom
+dicom = Dicom(app=app)
 
-db = SQLAlchemy(app)
+from cfmi.common.database import Newsite
+newsite = Newsite(app=app)
 
-import imaging.views
+from cfmi.common.cfmiauth import Cfmiauth
+cfmiauth = Cfmiauth(app, newsite, dicom)
+
+import cfmi.imaging.views
 

@@ -3,7 +3,7 @@ from flask import render_template
 from calendar import monthrange
 from datetime import timedelta, date, datetime
 
-from billing import db
+from cfmi.billing import db
 
 from pam import authenticate
 

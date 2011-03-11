@@ -10,7 +10,7 @@ Problem Report - {{ scan.subject.name }}: {{ scan.sched_start|datef }}
 <span class="return-link">
   <a href="{{ url_for('edit_session', id=scan.id) }}">
     Return to session</a> 
-  <a href="/{{ url_for('invoice', year=scan.sched_start.year, month=scan.sched_start.month, pi_uname=scan.project.pi.username) }}">Return to Invoice</a>
+  <a href="/{{ url_for('pi_month_view', year=scan.sched_start.year, month=scan.sched_start.month, pi_uname=scan.project.pi.username) }}">Return to Invoice</a>
 </span>
 <hr />
 <form action="" method="post">

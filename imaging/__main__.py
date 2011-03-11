@@ -1,3 +1,3 @@
-from imaging import app
+from cfmi.imaging import app
 
 app.run()

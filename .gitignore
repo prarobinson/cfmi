@@ -8,3 +8,4 @@ share
 imaging/dicom
 imaging/settings.py
 billing/settings.py
+imaging/dataserver.pid

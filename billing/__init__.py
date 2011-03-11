@@ -1,9 +1,13 @@
 from flask import Flask
 
 app = Flask(__name__)
-app.config.from_object('billing.settings')
+app.config.from_object('cfmi.billing.settings')
 
-from flaskext.sqlalchemy import SQLAlchemy
-db = SQLAlchemy(app)
+from cfmi.common.database import Newsite
+newsite = Newsite(app=app)
 
-import billing.views
+from cfmi.common.cfmiauth import Cfmiauth
+cfmiauth = Cfmiauth(app, newsite)
+
+import cfmi.billing.views
+import cfmi.billing.api

@@ -8,7 +8,7 @@
 <h1>{{ scan.user }} - {{ scan }}</h1>
 <em>{{ scan.project }} - {{ scan.subject }}</em>
 <span class="return-link">
-  <a href="{{ url_for('invoice', year=scan.sched_start.year,
+  <a href="{{ url_for('pi_month_view', year=scan.sched_start.year,
            month=scan.sched_start.month,
            pi_uname=scan.project.pi.username) }}">
     Return to invoice

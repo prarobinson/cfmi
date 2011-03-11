@@ -9,15 +9,7 @@ from flask import (request, redirect, abort, send_file, jsonify, g,
                    session, render_template, url_for, abort, flash,
                    make_response)
 
-from imaging import app
-
-from common.database.dicom import DicomSubject, DicomSeries
-from common.database.newsite import User, Project, Subject
-
-import common.cfmiauth
-from common.cfmiauth import (
-    authorized_users_only, login_required)
-common.cfmiauth.register(app)
+from cfmi.imaging import app, dicom, newsite, cfmiauth
 
 # Globals
 
@@ -26,7 +18,7 @@ common.cfmiauth.register(app)
 def before_request():
     g.user = None
     if 'user_id' in session:
-        g.user = User.query.get(session['user_id'])
+        g.user = newsite.User.query.get(session['user_id'])
 
 ## Utility Functions
 
@@ -61,23 +53,24 @@ def find_series_or_404(subject):
     are filtered out
     
     """
-    r = DicomSeries.query.join(DicomSubject).filter(DicomSubject.name==subject)
+    r = dicom.Series.query.join(dicom.Subject).filter(
+        dicom.Subject.name==subject)
     if not r.all():
         abort(404)
     if 'program' in request.args:
         r = r.filter(
-            DicomSeries.program_name.contains(request.args['program']))
+            dicom.Series.program_name.contains(request.args['program']))
     if 'date' in request.args:
         year, month, day = request.args['date'].split('-')
         bot = date(int(year), int(month), int(day))
         oneday = timedelta(days=1)
         top = bot + oneday
-        r = r.filter(DicomSeries.date<top).filter(DicomSeries.date>bot)
+        r = r.filter(dicom.Series.date<top).filter(dicom.Series.date>bot)
     return r
 
 # API Views
 @app.route('/')
-@login_required
+@cfmiauth.login_required
 def index():
     return render_template("layout.html") 
 
@@ -107,12 +100,12 @@ def get_id(subject):
 
 @app.route('/api/info/<series_id>')
 def get_info(series_id):
-    r = DicomSeries.query.get_or_404(series_id)
+    r = dicom.Series.query.get_or_404(series_id)
     return jsonify(id=r.id, date=r.date.strftime("%Y/%m/%d"),
                    subject=r.subject.name, program=r.program_name)
 
 @app.route('/download/<filename>', methods=['GET','HEAD'])
-@authorized_users_only
+@cfmiauth.authorized_users_only
 def download(filename):
     """ get_dicom
 
@@ -145,7 +138,7 @@ def download(filename):
             as_attachment=True)
 
 @app.route('/download/<filename>/ready')
-@authorized_users_only
+@cfmiauth.authorized_users_only
 def file_ready(filename):
     if not os.path.exists(app.config['DICOM_ARCHIVE_FOLDER']+filename):
         abort(404)
@@ -155,27 +148,28 @@ def file_ready(filename):
                 'download', filename=filename))
     
 @app.route('/api/project/<project_id>')
-@login_required
+@cfmiauth.login_required
 def project(project_id):
-    proj = Project.query.get(project_id)
+    proj = newsite.Project.query.get(project_id)
     if not proj:
         abort(404)
     return jsonify(name=proj.name, id=proj.id, shortname=proj.shortname(), 
                    subjects=proj.get_subjects())
 
 @app.route('/api/subject/<subject>')
-@authorized_users_only
+@cfmiauth.authorized_users_only
 def subject(subject):
-    subj = DicomSubject.query.filter(DicomSubject.name==subject).first()
+    subj = dicom.Subject.query.filter(dicom.Subject.name==subject).first()
     if not subj:
         abort(404)
     return jsonify(name=subj.name, series=subj.get_all_series())
 
 @app.route('/api/series/<series_id>')
-@authorized_users_only
+@cfmiauth.authorized_users_only
 def series(series_id):
-    ser = DicomSeries.query.get(series_id)
+    ser = dicom.Series.query.get(series_id)
     if not ser:
         abort(404)
     date = ser.date.strftime("%m/%d/%Y %H:%M")
-    return jsonify(program=ser.program_name, id=ser.id, date=date, subject=ser.subject.name)
+    return jsonify(program=ser.program_name, id=ser.id, 
+                   date=date, subject=ser.subject.name)

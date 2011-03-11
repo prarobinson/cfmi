@@ -1,3 +1,3 @@
-from billing import app
+from cfmi.billing import app
 
 app.run()
