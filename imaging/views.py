@@ -13,7 +13,11 @@ from imaging import app
 
 from common.database.dicom import DicomSubject, DicomSeries
 from common.database.newsite import User, Project, Subject
-from common.cfmiauth import authorized_users_only, login_required, cleanup_session
+
+import common.cfmiauth
+from common.cfmiauth import (
+    authorized_users_only, login_required)
+common.cfmiauth.register(app)
 
 # Globals
 
@@ -23,11 +27,6 @@ def before_request():
     g.user = None
     if 'user_id' in session:
         g.user = User.query.get(session['user_id'])
-
-@app.after_request
-def shutdown_session(response):
-    cleanup_session()
-    return response
 
 ## Utility Functions
 
@@ -81,31 +80,6 @@ def find_series_or_404(subject):
 @login_required
 def index():
     return render_template("layout.html") 
-
-@app.route('/login', methods = ['GET','POST'])
-def login():
-    if not g.user:
-        if request.method=='POST':
-            uname = request.form['username']
-            passwd = request.form['password']
-            user = User.query.filter(User.username==uname).first()
-            if user and user.auth(passwd):
-                session['user_id'] = user.id
-            else:
-                flash('Invalid user/pass')
-        else:
-            # For method 'GET'
-            return render_template('login.html')
-    if 'next' in request.args:
-        return redirect(request.args['next'])
-    else:
-        return redirect(url_for('index'))
-
-@app.route('/logout/')
-def logout():
-    session.pop('user_id', None)
-    flash("You have been logged out")
-    return redirect(url_for('index'))
 
 @app.route('/api/path/<subject>')
 def get_path(subject):

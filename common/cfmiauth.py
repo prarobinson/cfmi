@@ -1,11 +1,12 @@
 import pam
 import functools
 
-from flask import g, abort, url_for, redirect, request
+from flask import (
+    g, abort, url_for, redirect, request, render_template)
 
 from sqlalchemy.orm import mapper
 
-from common.database.newsite import Project, Subject
+from common.database.newsite import Project, Subject, User
 from common.database.newsite import cleanup_session as cleanup_newsite
 from common.database.dicom import DicomSeries
 from common.database.dicom import cleanup_session as cleanup_dicom
@@ -13,6 +14,8 @@ from common.database.dicom import cleanup_session as cleanup_dicom
 def cleanup_session():
     cleanup_newsite()
     cleanup_dicom()
+
+# Decorators
 
 def authorized_users_only(f):
     """ 
@@ -49,3 +52,36 @@ def login_required(f):
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return wrapper
+
+# Standard Views
+
+def register(app):
+    @app.route('/login', methods = ['GET','POST'])
+    def login():
+        if not g.user:
+            if request.method=='POST':
+                uname = request.form['username']
+                passwd = request.form['password']
+                user = User.query.filter(User.username==uname).first()
+                if user and user.auth(passwd):
+                    session['user_id'] = user.id
+                else:
+                    flash('Invalid user/pass')
+            else:
+                # For method 'GET'
+                return render_template('login.html')
+        if 'next' in request.args:
+            return redirect(request.args['next'])
+        else:
+            return redirect(url_for('index'))
+
+    @app.route('/logout/')
+    def logout():
+        session.pop('user_id', None)
+        flash("You have been logged out")
+        return redirect(url_for('index'))
+
+    @app.after_request
+    def shutdown_session(response):
+        cleanup_session()
+        return response
