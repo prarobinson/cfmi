@@ -8,10 +8,6 @@ from sqlalchemy.orm import mapper
 
 from cfmi.common.database import Dicom, Newsite
 
-# Decorators
-
-
-
 # Standard Views
 
 class Cfmiauth:
@@ -69,7 +65,6 @@ class Cfmiauth:
                     Subject.name==subj_str).first().project
             if 'project_id' in kwargs:
                 project = Project.get(kwargs['project_id'])
-            
             if project.auth(g.user):
                 return f(*args, **kwargs)
             return abort(403)
@@ -80,5 +75,14 @@ class Cfmiauth:
         def wrapper(*args, **kwargs):
             if not g.user:
                 return redirect(url_for('login', next=request.url))
+            return f(*args, **kwargs)
+        return wrapper
+
+    def superuser_only(self, f):
+        @functools.wraps(f)
+        @self.login_required
+        def wrapper(*args, **kwargs):
+            if not g.user.is_superuser():
+                abort(403)
             return f(*args, **kwargs)
         return wrapper

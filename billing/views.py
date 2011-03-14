@@ -5,7 +5,8 @@ from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
     flash, send_file, escape)
 
-from cfmi.billing import app, newsite, cfmiauth
+from cfmi.billing import app, cfmiauth
+from cfmi.billing.models import User, Project, Session, Problem, Invoice
 
 
 from cfmi.billing.utils import (
@@ -25,7 +26,7 @@ def datef(value, format='%m/%d/%Y %H:%M'):
 def before_request():
     g.user = None
     if 'user_id' in session:
-        g.user = newsite.User.query.get(session['user_id'])
+        g.user = User.query.get(session['user_id'])
 
 ## Views
 
@@ -39,15 +40,15 @@ def index():
 
 @app.route('/invoice/<id>')
 def invoice(id):
-    inv = newsite.Invoice.query.get(id)
+    inv = Invoice.query.get(id)
     if not inv:
         abort(404)
-    return inv.render_html()
+    return inv.render()
 
 @app.route('/<pi_uname>/<int:year>/<int:month>/')
 @cfmiauth.login_required
 def pi_month_view(pi_uname, year, month):
-    pi = newsite.User.query.filter(newsite.User.username==pi_uname).first()
+    pi = User.query.filter(User.username==pi_uname).first()
     if not pi:
         abort(404)
     if 'format' in request.args:
@@ -67,8 +68,8 @@ def pi_month_view(pi_uname, year, month):
 
     mindate = date(year, month, 1)
     
-    query = newsite.Session.query.join(newsite.Project).filter(
-        newsite.Project.pi==pi)
+    query = Session.query.join(Project).filter(
+        Project.pi==pi)
     scans = limit_month(query, year, month)
     
     total = sum(float(scan.cost()) for scan in scans)
@@ -79,7 +80,7 @@ def pi_month_view(pi_uname, year, month):
 @app.route('/session/<int:id>/', methods=['GET', 'POST'])
 @cfmiauth.login_required
 def edit_session(id):
-    scan = newsite.Session.query.get(id)
+    scan = Session.query.get(id)
     if not scan:
         abort(404)
     fs = SessionForm().bind(scan, data=request.form or None)
@@ -89,11 +90,11 @@ def edit_session(id):
             return redirect(request.url)
         fs.sync()
         try:
-            newsite.db_session.commit()
-            flash("Sucess: newsite.Session Modified")
+            db_session.commit()
+            flash("Sucess: Session Modified")
         except:
             flash("Failed to update database")
-            newsite.db_session.rollback()
+            db_session.rollback()
         return redirect(request.url)
         
     return render_template('scan_form.html', scan=scan,
@@ -104,18 +105,18 @@ def edit_session(id):
 def del_problem(id):
     if not g.user.is_superuser():
         abort(403)
-    scan = newsite.Session.query.get(id)
+    scan = Session.query.get(id)
     if not scan:
         abort(404)
     prob = scan.problem
     if not scan.problem:
         abort(404)
     try:
-        newsite.db_session.delete(prob)
-        newsite.db_session.commit()
+        db_session.delete(prob)
+        db_session.commit()
         flash("Removed billing correction")
     except:
-        newsite.db_session.rollback()
+        db_session.rollback()
         flash("Database error")
     return redirect(url_for('edit_session', id=id))   
         
@@ -125,29 +126,28 @@ def problem(id):
     if not g.user.is_superuser():
         abort(403)
 
-    scan = newsite.Session.query.get(id)
+    scan = Session.query.get(id)
     if not scan:
         abort(404)
-    prob = scan.problem if scan.problem else newsite.Problem(scan)
+    prob = scan.problem if scan.problem else Problem(scan)
     # Lame ass formalchemy cannot handle a pending object
     # without id. Check for this and remove it from the scan
     # if needed
     if prob in newsite.db_session and not prob.id:
-        newsite.db_session.expunge(prob)
+        db_session.expunge(prob)
     fs = ProblemForm().bind(prob, data=request.form or None)
     if request.method=='POST' and fs.validate():
         fs.sync()
         try:
             prob.scan = scan
-            newsite.db_session.add(prob)
-            newsite.db_session.commit()
+            db_session.add(prob)
+            db_session.commit()
             flash("Sucess: Problem added or modified")
             return redirect(url_for('edit_session', id=id))
         except:
             flash("Failed: Could not update database")
-            newsite.db_session.rollback()
+            db_session.rollback()
 
     return render_template('problem_form.html', scan=scan,
                            form=fs)
 
-# API View

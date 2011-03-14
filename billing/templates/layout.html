@@ -14,18 +14,29 @@
 <link rel="stylesheet"
       href="/static/billing.css"
       type="text/css" />
+<link rel="stylesheet"
+      href="/static/jquery-ui.css"
+      type="text/css" />
 <!--[if lt IE 8]>
   <link rel="stylesheet" 
         href="/static/blueprint/ie.css" 
         type="text/css" media="screen, projection" />
 <![endif]-->
+<script type="text/javascript"
+        src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js">
+</script>
+<script type="text/javascript"
+        src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js">
+</script>
+<script type="text/javascript"
+        src="/static/billing.js">
+</script>
 <title>CFMI Billing - {% block title %}{% endblock %}</title>
 </head>
 <body>
 <div class="container">
   <div class="span-24 last" id="header">
-    {% block header %}
-    {% endblock %}
+    <img src="/static/titlebar.png" />
   </div>
   <div class="span-24 last" id="content">
     {% with messages = get_flashed_messages() %}

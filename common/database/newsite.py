@@ -79,12 +79,6 @@ class User(Base):
     def auth(self, password):
         return pam.authenticate(self.username, password)
 
-    def invoices(self):
-        queryset = Invoice.query.join(Project).filter(Project.pi==self)
-        if len(queryset.all()):
-            return queryset
-        return False
-
 
 class Project(Base):
     __tablename__ = 'billing_projects'
@@ -121,24 +115,6 @@ class Project(Base):
 
     def auth(self, user):
         return user in self.users or self.pi is user
-
-    def invoice_scans(self, year, month):
-        isoday, numdays = monthrange(year, month)
-        mindate = date(year, month, 1)
-        maxdate = mindate + timedelta(days=numdays)
-        return Session.query.filter(
-            Session.project==self).filter(
-            Session.sched_start>=mindate).filter(
-                Session.sched_end<=maxdate).filter(
-                Session.approved==True).filter(
-                    Session.cancelled==False).order_by(
-                    Session.sched_start).all()
-
-    def invoice_scans_total(self, year, month):
-        total = 0.0
-        for scan in self.invoice_scans(year, month):
-            total += float(scan.cost())
-        return "%.2f" % total
 
 
 class Subject(Base):
@@ -183,48 +159,6 @@ class Session(Base):
     def __repr__(self):
         return self.sched_start.strftime("%m/%d/%Y-%H:%M")
 
-    def is_devel(self):
-        if "] devel" in self.project.name.lower():
-            return True
-        return False
-
-    def cost(self):
-        if self.is_devel():
-            return "%.2f" % 0
-        quar_rate = float(self.project.mri_rate) / 4
-        return "%.2f" % (round(self.duration() / 900) * quar_rate)
-
-    def duration(self):
-        if self.is_corrected():
-            return self.problem.duration * 3600
-        return (self.billing_end() - self.billing_start()).seconds
-
-    def dur_hours(self):
-        return "%.2f" % round(self.duration() / 3600.0, 2)
-
-    def billing_start(self):
-        if not self.start:
-            self.start = self.sched_start
-        return min([self.sched_start, self.start])
-
-    def billing_end(self):
-        if not self.end:
-            self.end = self.sched_end
-        return max([self.sched_end, self.end])
-
-    def is_corrected(self):
-        if self.problem:
-            return True
-        return False
-
-    def dur_actual(self):
-        return "%.2f" % round(
-            (self.billing_end() - self.billing_start(
-                    )).seconds / 3600.0, 2)
-
-    def billing_comment(self):
-        return self.problem.description
-
 
 class Problem(Base):
     __tablename__='Problems'
@@ -257,45 +191,3 @@ class Invoice(Base):
     def __repr__(self):
         return "<Invoice: {0}, {1}>".format(
             self.project.shortname, self.date)
-
-    def scans(self):
-        """ Invoice.sessions(): Returns all trackable sesion for
-        the invoice period
-        """
-
-        isoday, numdays = monthrange(self.date.year, self.date.month)
-        mindate = date(self.date.year, self.date.month, 1)
-        maxdate = mindate + timedelta(days=numdays)
-        return Session.query.filter(
-            Session.project==self.project).filter(
-            Session.sched_start>=mindate).filter(
-                Session.sched_end<=maxdate).filter(
-                Session.approved==True).filter(
-                    Session.cancelled==False).order_by(
-                    Session.sched_start).all()
-
-    def render_html(self):
-        return render_template('invoice.html', 
-                               invoice=self,
-                                   total=self.total())
-
-    def render_tex(self):
-        return render_template('invoice.tex', 
-                               sessions=self.scans(),
-                               pi=self.project.pi, date=self.date,
-                               total=self.total())
-
-    def render_pdf(self):
-        tex = self.render_tex()
-        path = '/tmp/invoice-%s_%s-%s' % (
-            self.project.pi, self.project[:-3], month, year)
-        tmpfile = open(path+'.tex', 'w')
-        tmpfile.write(tex)
-        tmpfile.close()
-        r = call(['pdflatex', path+'.tex'], cwd='/tmp/')
-        path = path+'.pdf'
-        return send_file(path, as_attachment=True)
-
-    def total(self):
-        total = sum(float(scan.cost()) for scan in self.scans())
-        return "%.2f" % total

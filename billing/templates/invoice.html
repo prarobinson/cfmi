@@ -16,7 +16,7 @@
   <td>Duration</td>
   <td>Cost</td>
 </tr>
-{% for scan in invoice.scans() %}
+{% for scan in invoice.sessions() %}
 <tr>
   <td>
     <a href="{{ url_for('edit_session', id=scan.id) }}">
