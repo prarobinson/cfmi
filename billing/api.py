@@ -10,8 +10,6 @@ from flask import (
 from cfmi.billing import app, cfmiauth
 from cfmi.billing.models import User, Project, Session, Invoice, Problem
 
-model_map = {'user': User, 'project': Project, 'session': Session,
-             'invoice': Invoice, 'problem': Problem}
 
 # Utility functions
 
