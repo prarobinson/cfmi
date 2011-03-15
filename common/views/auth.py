@@ -5,7 +5,7 @@ from cfmi.common.database.newsite import User
 
 auth = Module(__name__)
 
-@auth.route('/login', methods = ['GET','POST'])
+@auth.route('/login/', methods = ['GET','POST'])
 def login():
     if not g.user:
         if request.method=='POST':
@@ -25,8 +25,9 @@ def login():
     else:
         return redirect(url_for('frontend.index'))
 
-@auth.route('/logout')
+@auth.route('/logout/')
 def logout():
     session.pop('user_id', None)
     flash("You have been logged out")
     return redirect(url_for('frontend.index'))
+

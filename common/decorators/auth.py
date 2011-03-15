@@ -1,6 +1,6 @@
 import functools
 
-from flask import (g, url_for, abort, redirect)
+from flask import (g, url_for, abort, redirect, request)
 
 from cfmi.common.database.newsite import Subject, Project, Session, Invoice
 
