@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref, sessionmaker
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import scoped_session, create_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String, Boolean, 
                         DateTime, Numeric, Text, Float, Date)
@@ -13,36 +13,18 @@ from flask import render_template
 
 Base = declarative_base()
 
-class Newsite:
-    def __init__(self, app=None, db_string=None):
-        if not app or db_string:
-            raise RuntimeError("Either a Flask app or db_string must be provided")
-        if app:
-            self.app = app
-            self.app.config.setdefault('NEWSITE_DB_STRING', 'sqlite:///')
-            self.engine = create_engine(app.config['NEWSITE_DB_STRING'],
-                                   pool_recycle=300)
-        if db_string:
-            self.engine = create_engine(db_string,
-                                   pool_recycle=300)
+engine = None
 
-        self.db_session = scoped_session(
-            sessionmaker(bind=self.engine,autocommit=False,
-                                      autoflush=False))
-        self.Base = Base
-        self.Base.query = self.db_session.query_property()
+db_session = scoped_session(
+    lambda: sessionmaker(bind=engine)())
 
-        @app.after_request
-        def after_request(response):
-            self.db_session.remove()
-            return response
+def init_engine(db_string, **kwargs):
+    global engine
+    engine = create_engine(db_string, **kwargs)
+    return engine
 
-        self.User = User
-        self.Project = Project
-        self.Subject = Subject
-        self.Session = Session
-        self.Problem = Problem
-        self.Invoice = Invoice
+def create_all():
+    Base.metadata.create_all(bind=engine)
 
 users_assoc_table = Table(
     'Projects2Users', Base.metadata,
@@ -115,6 +97,8 @@ class Project(Base):
         return [subject.name for subject in self.subjects]
 
     def auth(self, user):
+        if user.is_superuser():
+            return True
         return user in self.users or self.pi is user
 
 
@@ -160,6 +144,8 @@ class Session(Base):
     def __repr__(self):
         return self.sched_start.strftime("%m/%d/%Y-%H:%M")
 
+    def auth(self, user):
+        return self.project.auth(user)
 
 class Problem(Base):
     __tablename__='Problems'

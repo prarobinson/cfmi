@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 from flask import render_template
 
-from cfmi.billing import newsite
+from cfmi.common.database import newsite
 
 # Methods to support objects in a billing context
 

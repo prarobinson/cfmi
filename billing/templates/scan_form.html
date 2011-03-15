@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-{{ scan.subject.name }}: {{ scan.sched_start|datef }}
+{{ scan.subject.name }}: {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }}
 {% endblock %}
 
 {% block content %}

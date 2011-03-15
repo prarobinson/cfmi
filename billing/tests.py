@@ -2,18 +2,21 @@ import unittest
 from datetime import datetime, date, timedelta
 from time import sleep
 
-from cfmi.billing import app
-from cfmi.billing.models import (User, Project, Invoice, Session, Subject, 
-                                 Problem, Base, db_session, 
-                                 engine)
+from cfmi.billing import create_app
+from cfmi.billing.models import (User, Project, Invoice, Session, Subject,
+                                 Problem, db_session)
+from cfmi.common.database.newsite import create_all
 
 class CfmiBillingTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = app.test_client()
-        Base.metadata.create_all(bind=engine)
+        self.app = create_app(testing=True)
+        self.client = self.app.test_client()
+        self._ctx = self.app.test_request_context()
+        self._ctx.push()
+        create_all()
 
     def tearDown(self):
-        pass
+        self._ctx.pop()
 
     def test_can_query_all_objects(self):
         User.query.all()
@@ -22,75 +25,43 @@ class CfmiBillingTestCase(unittest.TestCase):
         Session.query.all()
         Problem.query.all()
 
-    def test_create_superuser(self):
-        test_user = User()
-        test_user.username = 'admin'
-        test_user.name = 'Admin user'
-        test_user.permission_level = 3
-        db_session.add(test_user)
+    def test_create_models(self):
+        admin = User()
+        admin.username = 'admin'
+        admin.name = 'Admin user'
+        admin.permission_level = 3
+        db_session.add(admin)
         db_session.commit()
-        assert User.query.get(test_user.id).is_superuser()
-
-    def test_create_nock(self):
-        test_user = User()
-        test_user.username = 'nock'
-        test_user.name = 'Shawn Nock'
-        test_user.permission_level = 1
-        db_session.add(test_user)
+        assert admin.id
+        nock = User()
+        nock.username = 'nock'
+        nock.name = 'Shawn Nock'
+        nock.permission_level = 1
+        db_session.add(nock)
         db_session.commit()
-        assert not User.query.get(test_user.id).is_superuser()
-
-    def test_create_john(self):
-        test_user = User()
-        test_user.username = 'johnvm'
-        test_user.name = 'John VanMeter'
-        test_user.permission_level = 1
-        db_session.add(test_user)
+        assert nock.id
+        john = User()
+        john.username = 'johnvm'
+        john.name = 'John VanMeter'
+        john.permission_level = 1
+        db_session.add(john)
         db_session.commit()
-        assert not User.query.get(test_user.id).is_superuser()
-
-    def test_project(self):
+        assert john.id
         proj = Project()
-        nock = User.query.filter(User.username=='nock').first()
-        john = User.query.filter(User.username=='johnvm').first()
-        admin = User.query.filter(User.username=='admin').first()
         proj.name = "Fancy project"
         proj.pi = john
         proj.is_active = True
         proj.mri_rate = 500.0
-        db_session.add(proj)
-        db_session.commit()
         proj.users.append(nock)
         db_session.add(proj)
         db_session.commit()
-        assert proj.pi == john
-        assert nock in proj.users
-        assert proj in nock.get_projects()
-        assert proj in john.get_projects()
-        assert proj in admin.get_projects()
-        assert proj.auth(nock)
-        assert proj.auth(john)
-
-    def test_subject(self):
-        proj = Project.query.all()[0]
+        assert proj.id
         subj = Subject()
         subj.name = "SUBJ01"
         subj.project = proj
         db_session.add(subj)
         db_session.commit()
-        proj = Project.query.all()[0]
-        nock = User.query.filter(User.username=='nock').first()
-        john = User.query.filter(User.username=='johnvm').first()
-        assert proj
         assert subj.id
-        assert subj in proj.subjects
-        assert subj.auth(nock)
-        assert subj.auth(john)
-
-    def test_session(self):
-        proj = Project.query.all()[0]
-        nock = User.query.filter(User.username=='nock').first()
-        subj = Subject.query.filter(Subject.name=='SUBJ01').first()
         sess = Session()
         sess.user = nock
         sess.sched_start = datetime.now()
@@ -99,27 +70,34 @@ class CfmiBillingTestCase(unittest.TestCase):
         sess.subject = subj
         db_session.add(sess)
         db_session.commit()
-        db_session.refresh(sess)
         assert sess.id
-        assert sess.project is proj
-        assert sess.subject is subj
-        assert sess.user is nock
-        assert float(sess.cost()) == float(proj.mri_rate)
-
-    def test_problem(self):
-        sleep(1)
-        sess = Session.query.all()[0]
+        sess2 = Session()
+        sess2.user = nock
+        sess2.sched_start = datetime.now()
+        sess2.sched_end = datetime.now() + timedelta(minutes=60)
+        sess2.project = proj
+        sess2.subject = subj
+        db_session.add(sess2)
+        db_session.commit()
+        assert sess2.id
         prob = Problem()
-        prob.session = sess
+        prob.session = sess2
         prob.decription = "this has been adjusted"
-        prob.duration = 4400
+        prob.duration = .5
         db_session.add(prob)
         db_session.commit()
-        prob = Problem.query.all()[0]
-        assert prob
-        assert prob.session is sess
-        assert float(sess.cost()) > 500
-        assert sess.is_corrected()
+        assert prob.id
+        assert admin.is_superuser()
+        assert not nock.is_superuser()
+        assert not john.is_superuser()
+        for user in [admin, nock, john]:
+            assert proj.auth(user)
+            assert subj.auth(user)
+            assert sess.auth(user)
+            assert proj in user.get_projects()
+        assert float(sess.cost()) == float(proj.mri_rate)
+        assert float(sess.cost())/2 == float(sess2.cost())
+        assert sess2.is_corrected()
 
 if __name__ == "__main__":
     unittest.main()

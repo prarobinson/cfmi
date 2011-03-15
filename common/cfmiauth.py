@@ -4,9 +4,7 @@ import functools
 from flask import (
     g, abort, url_for, redirect, request, render_template, session)
 
-from sqlalchemy.orm import mapper
-
-from cfmi.common.database import Dicom, Newsite
+from cfmi.common.database.newsite import User, Project, Subject
 
 # Standard Views
 
@@ -56,10 +54,10 @@ class Cfmiauth:
                 subj_str = kwargs['filename'].split(".")[0]
             if 'subject' in kwargs:
                 subj_str = kwargs['subject']
-            if self.app.config['CFMIAUTH_USING_DICOM']:
-                if 'series_id' in kwargs:
-                    subj_str = Dicom.Series.query.get(
-                        kwargs['series_id']).subject.name
+            #if self.app.config['CFMIAUTH_USING_DICOM']:
+            #    if 'series_id' in kwargs:
+            #        subj_str = Dicom.Series.query.get(
+            #            kwargs['series_id']).subject.name
             if subj_str:
                 project = Subject.query.filter(
                     Subject.name==subj_str).first().project
