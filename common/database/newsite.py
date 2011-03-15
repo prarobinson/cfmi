@@ -2,7 +2,7 @@ import pam
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref, sessionmaker
-from sqlalchemy.orm import scoped_session, create_session
+from sqlalchemy.orm import scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String, Boolean, 
                         DateTime, Numeric, Text, Float, Date)
@@ -19,6 +19,8 @@ db_session = scoped_session(
 def init_engine(db_string, **kwargs):
     global engine
     engine = create_engine(db_string, **kwargs)
+    global Base
+    Base.query = db_session.query_property()
     return engine
 
 def create_all():

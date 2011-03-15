@@ -1,6 +1,6 @@
 from flask import Flask, g, session
 
-from cfmi.common.database.newsite import init_engine, Base, db_session
+from cfmi.common.database.newsite import init_engine, db_session
 from cfmi.common.views import auth
 from cfmi.billing.views import api
 from cfmi.billing.views import frontend
@@ -11,7 +11,6 @@ def create_app(testing=False):
     if not testing:
         app.config.from_object('cfmi.billing.settings')
     init_engine(app.config['NEWSITE_DB_STRING'])
-    Base.query = db_session.query_property()
     app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
     app.register_module(auth)
