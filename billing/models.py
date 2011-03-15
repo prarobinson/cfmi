@@ -125,4 +125,10 @@ Invoice.sessions = invoice_sessions
 Invoice.render = invoice_render
 Invoice.total = invoice_total
 
+Subject = newsite.Subject
+
 db_session = newsite.db_session
+
+Base = newsite.Base
+
+engine = newsite.engine

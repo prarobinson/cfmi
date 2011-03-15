@@ -20,16 +20,17 @@ class Newsite:
         if app:
             self.app = app
             self.app.config.setdefault('NEWSITE_DB_STRING', 'sqlite:///')
-            engine = create_engine(app.config['NEWSITE_DB_STRING'],
+            self.engine = create_engine(app.config['NEWSITE_DB_STRING'],
                                    pool_recycle=300)
         if db_string:
-            engine = create_engine(db_string,
+            self.engine = create_engine(db_string,
                                    pool_recycle=300)
 
-        self.db_session = scoped_session(sessionmaker(bind=engine,autocommit=False,
+        self.db_session = scoped_session(
+            sessionmaker(bind=self.engine,autocommit=False,
                                       autoflush=False))
-       
-        Base.query = self.db_session.query_property()
+        self.Base = Base
+        self.Base.query = self.db_session.query_property()
 
         @app.after_request
         def after_request(response):
