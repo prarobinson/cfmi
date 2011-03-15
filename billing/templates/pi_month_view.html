@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Invoice - {{ pi.name }} - {{ date|datef("%b %Y")}}{% endblock %}
+{% block title %}Invoice - {{ pi.name }} - {{ date.strftime("%b %Y")}}{% endblock %}
 
 {% block content %}
 <div class="span-24 last">
 <h1>Invoice: {{ pi.name }}'s Group</h1>
-<em>{{ date|datef("%b %Y") }}</em>
+<em>{{ date.strftime("%b %Y") }}</em>
 <hr />
 <table class="invoice">
 <tr>
@@ -20,8 +20,8 @@
 {% for scan in project.invoice_scans(date.year, date.month) %}
 <tr>
   <td>
-    <a href="{{ url_for('edit_session', id=scan.id) }}">
-      {{ scan.sched_start|datef }} - {{ scan.sched_end|datef("%H:%M") }}</a>
+    <a href="{{ url_for('edit_session', session_id=scan.id) }}">
+      {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a>
   </td>
   <td>{{ scan.project.shortname() }}</td>
   <td>{{ scan.subject.name }}</td>

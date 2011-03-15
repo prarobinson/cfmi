@@ -1,10 +1,10 @@
 from formalchemy import FieldSet
 
-from cfmi.billing import newsite
+from cfmi.billing.models import Session, Problem
 
 class SessionForm(FieldSet):
     def __init__(self):
-        FieldSet.__init__(self, newsite.Session)
+        FieldSet.__init__(self, Session)
         self.configure(options=[
                 self.sched_start.label("Scheduled Start"),
                 self.sched_end.label("Scheduled End"),
@@ -22,5 +22,5 @@ class ROSessionForm(SessionForm):
 
 class ProblemForm(FieldSet):
     def __init__(self):
-        FieldSet.__init__(self, newsite.Problem)
+        FieldSet.__init__(self, Problem)
         self.configure(exclude=[self['session']])

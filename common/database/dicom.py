@@ -7,29 +7,21 @@ from sqlalchemy import (Table, Column, ForeignKey, Integer, String, Boolean,
 
 Base = declarative_base()
 
-class Dicom:
-    def __init__(self, app=None, db_string=None):
-        if not app or db_string:
-            raise RuntimeError("Either a Flask app or db_string must be provided")
-        if app:
-            self.app = app
-            self.app.config.setdefault('DICOM_DB_STRING', 'sqlite:///')
-            engine = create_engine(app.config['DICOM_DB_STRING'],
-                                   pool_recycle=300)
-        if db_string:
-            engine = create_engine(db_string,
-                                   pool_recycle=300)
-        self.db_session = scoped_session(sessionmaker(bind=engine,autocommit=False,
-                                                 autoflush=False))
-        Base.query = self.db_session.query_property()
+engine = None
 
-        @app.after_request
-        def after_request(response):
-            self.db_session.remove()
-            return response
+db_session = scoped_session(
+    lambda: sessionmaker(bind=engine)())
 
-        self.Subject = Subject
-        self.Series = Series
+def init_engine(db_string, **kwargs):
+    global engine
+    engine = create_engine(db_string, **kwargs)
+    global Base
+    Base.query = db_session.query_property()
+    return engine
+
+def create_all():
+    Base.metadata.create_all(bind=engine)
+
 
 class Subject(Base):
     __tablename__='imaging_subject'

@@ -5,11 +5,19 @@ from decimal import Decimal
 
 from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
-    flash, send_file, escape, jsonify)
+    flash, send_file, escape, jsonify, current_app, Module)
 
-from cfmi.billing import app, cfmiauth
 from cfmi.billing.models import User, Project, Session, Invoice, Problem
+from cfmi.common.decorators.auth import (superuser_only, login_required,
+                                         authorized_users_only)
+api = Module(__name__)
 
+## Flask Hooks
+@api.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        g.user = User.query.get(session['user_id'])
 
 # Utility functions
 
@@ -32,7 +40,7 @@ def flatten(obj, attrib_filter=None):
 
 def safe_eval(f):
     @functools.wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapier(*args, **kwargs):
         try:
             return f(*args, **kwargs)
         except NameError:
@@ -41,30 +49,31 @@ def safe_eval(f):
         except AttributeError:
             ## existing non-model class access attempted
             abort(403)
-    return wrapper
+    return wrapier
 
 # Views
 
-@app.route('/api/db/<model>')
-@cfmiauth.superuser_only
+@api.route('/db/<model>')
+@superuser_only
 @safe_eval
 def model_summary(model=None):
     object_list = eval(model.capitalize()).query.all()
     flat_list = [flatten(object) for object in object_list]
     return jsonify({'model': model, 'object_list': flat_list})
 
-@app.route('/api/activePI')
-@cfmiauth.superuser_only
+@api.route('/activePI')
+@superuser_only
 def admin_list_pi():
     active_projects = Project.query.filter(Project.is_active==True)
     pi_list = []
     for project in active_projects:
         if not project.pi in pi_list:
-            pi_list.append(project.pi)
+            pi_list.apiend(project.pi)
     flat_list = [flatten(pi, attrib_filter=['name','username','id']) for pi in pi_list]
     return jsonify({'name':"active_pis", 'object_list': flat_list})
     
-@app.route('/api/db/<model>/<int:id>')
+@api.route('/db/<model>/<int:id>')
+@login_required
 @safe_eval
 def model_instance(model, id):
     inst = eval(model.capitalize()).query.get(id)
@@ -72,19 +81,19 @@ def model_instance(model, id):
         abort(404)
     return jsonify(flatten(inst))
 
-@app.route('/api/user')
-@cfmiauth.login_required
+@api.route('/user')
+@login_required
 def user_info():
     return jsonify(flatten(g.user))
 
-@app.route('/api/projects')
-@cfmiauth.login_required
+@api.route('/projects')
+@login_required
 def user_project_list():
     return jsonify({
             "projects": [flatten(proj) for proj in g.user.get_projects()]})
 
-@app.route('/api/projects/<int:project_id>')
-@cfmiauth.authorized_users_only
+@api.route('/projects/<int:project_id>')
+@authorized_users_only
 def user_project_detail(project_id):
     proj = Project.query.get(project_id)
     if not proj:

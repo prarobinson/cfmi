@@ -3,11 +3,12 @@ from subprocess import call
 
 from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
-    flash, send_file, escape)
+    flash, send_file, escape, current_app, Module)
 
-from cfmi.billing import app, cfmiauth
-from cfmi.billing.models import User, Project, Session, Problem, Invoice
-
+from cfmi.billing.models import (User, Project, Session, Problem, Invoice, 
+                                 db_session)
+from cfmi.common.decorators.auth import (superuser_only, login_required,
+                                         authorized_users_only)
 
 from cfmi.billing.utils import (
     total_ytd, total_last_month, active_pis, due_invoices, limit_month)
@@ -15,22 +16,12 @@ from cfmi.billing.utils import (
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm
 
-
-## Filters
-@app.template_filter()
-def datef(value, format='%m/%d/%Y %H:%M'):
-    return value.strftime(format)
-
-## Flask Hooks
-@app.before_request
-def before_request():
-    g.user = None
-    if 'user_id' in session:
-        g.user = User.query.get(session['user_id'])
+frontend = Module(__name__)
 
 ## Views
 
-@app.route('/')
+@frontend.route('/')
+@login_required
 def index():
     return render_template('index.html', 
                            last_month=total_last_month(), 
@@ -38,15 +29,16 @@ def index():
                            active_pis=active_pis(),
                            due=due_invoices())
 
-@app.route('/invoice/<id>')
+@frontend.route('/invoice/<invoice_id>')
+@authorized_users_only
 def invoice(id):
-    inv = Invoice.query.get(id)
+    inv = Invoice.query.get(invoice_id)
     if not inv:
         abort(404)
     return inv.render()
 
-@app.route('/<pi_uname>/<int:year>/<int:month>/')
-@cfmiauth.login_required
+@frontend.route('/<pi_uname>/<int:year>/<int:month>/')
+@login_required
 def pi_month_view(pi_uname, year, month):
     pi = User.query.filter(User.username==pi_uname).first()
     if not pi:
@@ -77,10 +69,10 @@ def pi_month_view(pi_uname, year, month):
     return render_template('pi_month_view.html', pi=pi, 
                            date=mindate, total=total)
 
-@app.route('/session/<int:id>/', methods=['GET', 'POST'])
-@cfmiauth.login_required
-def edit_session(id):
-    scan = Session.query.get(id)
+@frontend.route('/session/<int:session_id>/', methods=['GET', 'POST'])
+@authorized_users_only
+def edit_session(session_id):
+    scan = Session.query.get(session_id)
     if not scan:
         abort(404)
     fs = SessionForm().bind(scan, data=request.form or None)
@@ -100,11 +92,9 @@ def edit_session(id):
     return render_template('scan_form.html', scan=scan,
                            form=fs)
 
-@app.route('/scan/<int:id>/problem/delete/')
-@cfmiauth.login_required
+@frontend.route('/scan/<int:id>/problem/delete/')
+@superuser_only
 def del_problem(id):
-    if not g.user.is_superuser():
-        abort(403)
     scan = Session.query.get(id)
     if not scan:
         abort(404)
@@ -120,12 +110,9 @@ def del_problem(id):
         flash("Database error")
     return redirect(url_for('edit_session', id=id))   
         
-@app.route('/scan/<int:id>/problem/', methods=['GET', 'POST'])
-@cfmiauth.login_required
+@frontend.route('/scan/<int:id>/problem/', methods=['GET', 'POST'])
+@superuser_only
 def problem(id):
-    if not g.user.is_superuser():
-        abort(403)
-
     scan = Session.query.get(id)
     if not scan:
         abort(404)
