@@ -1,12 +1,12 @@
 from flask import Flask, g, session
 
-from cfmi.common.database.newsite import User, init_engine, db_session
-
 from cfmi.common.database.dicom import (
     init_engine as init_dicom, 
     db_session as db_session_dicom)
+from cfmi.common.database.newsite import User, init_engine, db_session
 
-from cfmi.common.views import auth
+from cfmi.common.auth.views import auth
+from cfmi.imaging.views import api
 from cfmi.imaging.views import frontend
 
 def create_app(testing=False):
@@ -17,7 +17,7 @@ def create_app(testing=False):
         app.config.from_object('cfmi.imaging.settings')
     init_engine(app.config['NEWSITE_DB_STRING'])
     init_dicom(app.config['DICOM_DB_STRING'])
-    #app.register_module(api, url_prefix='/api')
+    app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
     app.register_module(auth)
     # Establish hooks common to all modules

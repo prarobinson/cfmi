@@ -1,7 +1,7 @@
 from flask import Flask, g, session
 
 from cfmi.common.database.newsite import init_engine, db_session
-from cfmi.common.views import auth
+from cfmi.common.auth.views import auth
 from cfmi.billing.views import api
 from cfmi.billing.views import frontend
 

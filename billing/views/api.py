@@ -8,7 +8,7 @@ from flask import (
     flash, send_file, escape, jsonify, current_app, Module)
 
 from cfmi.billing.models import User, Project, Session, Invoice, Problem
-from cfmi.common.decorators.auth import (superuser_only, login_required,
+from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 api = Module(__name__)
 
