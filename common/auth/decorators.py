@@ -2,6 +2,7 @@ import functools
 
 from flask import (g, url_for, abort, redirect, request)
 
+from cfmi.common.auth.views import auth
 from cfmi.common.database.newsite import Subject, Project, Session, Invoice
 
 def authorized_users_only(f):

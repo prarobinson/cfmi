@@ -3,7 +3,7 @@ from flask import (Module, url_for, redirect, session, flash, g,
 
 from cfmi.common.database.newsite import User
 
-auth = Module(__name__)
+auth = Module(__name__, name='auth')
 
 @auth.route('/login/', methods = ['GET','POST'])
 def login():
