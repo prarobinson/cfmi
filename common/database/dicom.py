@@ -22,6 +22,8 @@ def init_engine(db_string, **kwargs):
 def create_all():
     Base.metadata.create_all(bind=engine)
 
+def drop_all():
+    Base.metadata.drop_all(bind=engine)
 
 class Subject(Base):
     __tablename__='imaging_subject'

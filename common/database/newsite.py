@@ -26,6 +26,9 @@ def init_engine(db_string, **kwargs):
 def create_all():
     Base.metadata.create_all(bind=engine)
 
+def drop_all():
+    Base.metadata.drop_all(bind=engine)
+
 users_assoc_table = Table(
     'Projects2Users', Base.metadata,
     Column('User_ID', Integer, 
