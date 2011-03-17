@@ -39,6 +39,9 @@ def limit_month(queryset, year, month):
     isoday, numdays = monthrange(year, month)
     min_date = date(year, month, 1)
     max_date = date(year, month, numdays)
+    if not queryset.first().__class__ is Session:
+        print queryset.first().__class__
+        queryset = queryset.join(Session)
     return queryset.filter(Session.sched_start>=min_date).filter(
         Session.sched_start<=max_date).filter(
         Session.approved==True).filter(

@@ -92,9 +92,9 @@ class Project(Base):
     def shortname(self):
         if not self.name:
             return "<Untitled Project>"
-        if len(self.name) <= 65:
+        if len(self.name) <= 55:
             return self.name
-        return self.name[:65]+"..."
+        return self.name[:55]+"..."
 
     def get_subjects(self):
         return [subject.name for subject in self.subjects]

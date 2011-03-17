@@ -10,6 +10,9 @@ from flask import (
 from cfmi.billing.models import User, Project, Session, Invoice, Problem
 from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
+
+from cfmi.billing.utils import limit_month
+
 api = Module(__name__)
 
 ## Flask Hooks
@@ -65,12 +68,33 @@ def model_summary(model=None):
 @superuser_only
 def admin_list_pi():
     active_projects = Project.query.filter(Project.is_active==True)
+    if 'year' in request.args and 'month' in request.args:
+        active_projects = limit_month(active_projects,
+            int(request.args['year']), 
+            int(request.args['month']))
     pi_list = []
     for project in active_projects:
         if not project.pi in pi_list:
-            pi_list.apiend(project.pi)
+            pi_list.append(project.pi)
     flat_list = [flatten(pi, attrib_filter=['name','username','id']) for pi in pi_list]
     return jsonify({'name':"active_pis", 'object_list': flat_list})
+
+# @api.route('/activePI/<user_id>')
+# @superuser_only
+# def admin_list_pi_projects(user_id):
+#     pi = User.query.get(user_id)
+#     active_pi_projects = []
+#     for proj in pi.pi_projects:
+#         if len(proj.invoice_scans(
+#                 int(request.args['year']), int(request.args['month']))):
+#             proj.shortname = proj.shortname()
+#             active_pi_projects.append(proj)
+#     flat_list = [
+#         flatten(
+#             proj, attrib_filter=[
+#                 'shortname', 'id']) for proj in active_pi_projects]
+#     return jsonify({'piuname':pi.username, 'object_list': flat_list})
+    
     
 @api.route('/db/<model>/<int:id>')
 @login_required

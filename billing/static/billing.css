@@ -1,33 +1,23 @@
-textarea {
-    width: 600px;
+.ui-datepicker-calendar {
+    display: none;
 }
 
-h1 {
-    margin:0;
+.packed_4_col {
+    float:left;
+    width:210px;
+    list-style-type:none;
 }
 
-.return-link {
-    float:right;
+.packed_2_col {
+    float:left;
+    width:420px;
+    list-style-type:none;
 }
 
-label {
-    float: left;
-    text-align: right;
-    margin-right: 1em;
-    width: 10em;
+body {
+    background:#c6c3be;
 }
 
-form div {
-    margin: 0.5em;
-    float: left;
-    width: 100%;
-}
-
-form input[type="submit"] {
-    margin-top: 1em;
-    margin-left: 9em;
-}
-
-#correction {
-    text-align:center;
+.container {
+    background-color:#FFF;
 }
