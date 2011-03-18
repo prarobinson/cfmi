@@ -11,7 +11,7 @@ from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 
 from cfmi.billing.utils import (
-    total_ytd, total_last_month, active_pis, due_invoices, limit_month)
+    total_ytd, total_last_month, limit_month, gchart_ytd_url)
 
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm
@@ -23,11 +23,24 @@ frontend = Module(__name__)
 @frontend.route('/')
 @login_required
 def index():
-    return render_template('index.html', 
-                           last_month=total_last_month(), 
-                           YTD=total_ytd(),
-                           active_pis=active_pis(),
-                           due=due_invoices())
+    return render_template('index.html')
+
+@frontend.route('/reconcile/')
+@superuser_only
+def reconcile():
+    outstanding = Invoice.query.filter(Invoice.reconciled==False)
+    return render_template('reconcile.html', invoice_list=outstanding)
+
+@frontend.route('/stats/')
+@superuser_only
+def statistics():
+    return render_template('stats.html', ytd=total_ytd(), lastmonth=total_last_month(),
+                           gchart_ytd_url=gchart_ytd_url())
+
+@frontend.route('/batch/')
+@superuser_only
+def batch():
+    return render_template('batch.html')
 
 @frontend.route('/invoice/<invoice_id>')
 @authorized_users_only
@@ -92,7 +105,7 @@ def edit_session(session_id):
     return render_template('scan_form.html', scan=scan,
                            form=fs)
 
-@frontend.route('/scan/<int:id>/problem/delete/')
+@frontend.route('/session/<int:id>/problem/delete/')
 @superuser_only
 def del_problem(id):
     scan = Session.query.get(id)
@@ -108,9 +121,9 @@ def del_problem(id):
     except:
         db_session.rollback()
         flash("Database error")
-    return redirect(url_for('edit_session', id=id))   
+    return redirect(url_for('edit_session', session_id=id))   
         
-@frontend.route('/scan/<int:id>/problem/', methods=['GET', 'POST'])
+@frontend.route('/session/<int:id>/problem/', methods=['GET', 'POST'])
 @superuser_only
 def problem(id):
     scan = Session.query.get(id)
@@ -120,7 +133,7 @@ def problem(id):
     # Lame ass formalchemy cannot handle a pending object
     # without id. Check for this and remove it from the scan
     # if needed
-    if prob in newsite.db_session and not prob.id:
+    if prob in db_session and not prob.id:
         db_session.expunge(prob)
     fs = ProblemForm().bind(prob, data=request.form or None)
     if request.method=='POST' and fs.validate():
@@ -130,7 +143,7 @@ def problem(id):
             db_session.add(prob)
             db_session.commit()
             flash("Sucess: Problem added or modified")
-            return redirect(url_for('edit_session', id=id))
+            return redirect(url_for('edit_session', session_id=id))
         except:
             flash("Failed: Could not update database")
             db_session.rollback()

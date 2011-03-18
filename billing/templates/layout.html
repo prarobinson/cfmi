@@ -38,6 +38,13 @@
   <div class="span-24 last" id="header">
     <img src="/static/titlebar.png" />
   </div>
+  <div id="nav" class="span-24 last">
+      <a id="browse" href="/"></a>
+      <a id="reconcile" href="/reconcile"></a>
+      <a id="stats" href="/stats"></a>
+      <a id="batch" href="/batch"></a>
+      <a id="home" href="http://cfmi.georgetown.edu/"></a>
+  </div>
   <div class="span-24 last" id="content">
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -47,9 +54,6 @@
     {% endif %}
     {% endwith %}
     {% block content %}
-    {% if g.user %}
-    <h1>Welcome, {{ g.user.name }}!</h1>
-    {% endif %}
     {% endblock %}
   </div>
 </div>

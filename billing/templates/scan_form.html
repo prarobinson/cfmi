@@ -5,33 +5,35 @@
 {% endblock %}
 
 {% block content %}
-<h1>{{ scan.user.name }} - {{ scan }}</h1>
-<em>{{ scan.project }} - {{ scan.subject }}</em>
-<span class="return-link">
-  <a href="{{ url_for('pi_month_view', year=scan.sched_start.year,
-           month=scan.sched_start.month,
-           pi_uname=scan.project.pi.username) }}">
-    Return to invoice
-  </a>
-  <br />Cost: {{ scan.cost() }}
-</span><br />
-Duration: {{ scan.dur_hours() }} hrs.{% if scan.is_corrected() %}
-(Billing corrected from {{ scan.dur_actual() }} hrs.: {{ scan.billing_comment() }}
+<div class="contentbox">
+  <h1>{{ scan.user.name }} - {{ scan }}</h1>
+  <em>{{ scan.project }} - {{ scan.subject }}</em>
+  <span class="return-link">
+    <a href="{{ url_for('pi_month_view', year=scan.sched_start.year,
+             month=scan.sched_start.month,
+             pi_uname=scan.project.pi.username) }}">
+      Return to invoice
+    </a>
+    <br />Cost: {{ scan.cost() }}
+  </span><br />
+  Duration: {{ scan.dur_hours() }} hrs.{% if scan.is_corrected() %}
+  (Billing corrected from {{ scan.dur_actual() }} hrs.: {{ scan.billing_comment() }}
   [<a href="{{ url_for('del_problem', id=scan.id) }}">delete</a>]
-[<a href="{{ url_for('problem', id=scan.id) }}">edit</a>])
-{% else %}
-[<a href="{{ url_for('problem', id=scan.id) }}">change duration</a>]
-{% endif %}
-<hr />
-<form action="" method="post">
-{{ form.render()|safe }}
-{% if scan.is_corrected() %}
-<div id="correction">
-  Scan duration corrected to {{ scan.dur_hours() }} hrs. due to
-  reported problem: {{ scan.billing_comment() }}
-  [<a href="{{ url_for('del_problem', id=scan.id) }}">delete</a>]
+  [<a href="{{ url_for('problem', id=scan.id) }}">edit</a>])
+  {% else %}
+  [<a href="{{ url_for('problem', id=scan.id) }}">change duration</a>]
+  {% endif %}
+  <hr />
+  <form action="" method="post">
+    {{ form.render()|safe }}
+    {% if scan.is_corrected() %}
+    <div id="correction">
+      Scan duration corrected to {{ scan.dur_hours() }} hrs. due to
+      reported problem: {{ scan.billing_comment() }}
+      [<a href="{{ url_for('del_problem', id=scan.id) }}">delete</a>]
+    </div>
+    {% endif %}
+    <div><input type="submit" value="Submit Changes" /></div>
+  </form>
 </div>
-{% endif %}
-<div><input type="submit" value="Submit Changes" /></div>
-</form>
 {% endblock %}

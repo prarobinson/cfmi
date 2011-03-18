@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+
+<div id="text" class="halfcontentbox">
+<h1>Basic Stats</h1>
+<p>Year to Date: {{ ytd }}</p>
+<p>Last Month: {{ lastmonth }}</p> 
+</div>
+
+<div id="ytd_graph" class="halfcontentbox">
+<h1>Revenue: Year to Date</h1>
+<img src="{{ gchart_ytd_url }}" width="463" height="400" alt="Monthly Revenue - This Year" />
+</div>
+
+{% endblock %}

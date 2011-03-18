@@ -11,7 +11,7 @@ def create_app(testing=False):
     if not testing:
         app.config.from_object('cfmi.billing.settings')
         app.config['TESTING'] = True
-    init_engine(app.config['NEWSITE_DB_STRING'])
+    init_engine(app.config['NEWSITE_DB_STRING'], pool_recycle=300)
     app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
     app.register_module(auth)
