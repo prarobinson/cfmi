@@ -1,5 +1,5 @@
 from flask import (Module, url_for, redirect, session, flash, g,
-                   request, render_template)
+                   request, render_template, current_app)
 
 from cfmi.common.database.newsite import User
 
@@ -14,6 +14,8 @@ def login():
             user = User.query.filter(
                 User.username==uname).first()
             if user and user.auth(passwd):
+                session['user_id'] = user.id
+            if current_app.config['TESTING']:
                 session['user_id'] = user.id
             else:
                 flash('Invalid user/pass')

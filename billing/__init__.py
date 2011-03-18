@@ -10,6 +10,7 @@ def create_app(testing=False):
     app.config.setdefault('NEWSITE_DB_STRING', 'sqlite:///')
     if not testing:
         app.config.from_object('cfmi.billing.settings')
+        app.config['TESTING'] = True
     init_engine(app.config['NEWSITE_DB_STRING'])
     app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
