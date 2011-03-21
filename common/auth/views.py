@@ -13,10 +13,9 @@ def login():
             passwd = request.form['password']
             user = User.query.filter(
                 User.username==uname).first()
-            if user and user.auth(passwd):
-                session['user_id'] = user.id
-            if current_app.config['TESTING']:
-                session['user_id'] = user.id
+            if user: 
+                if user.auth(passwd) or current_app.config['TESTING']:
+                    session['user_id'] = user.id
             else:
                 flash('Invalid user/pass')
         else:

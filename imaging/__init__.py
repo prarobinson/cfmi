@@ -15,8 +15,8 @@ def create_app(testing=False):
     app.config.setdefault('DICOM_DB_STRING', 'sqlite:///')
     if not testing:
         app.config.from_object('cfmi.imaging.settings')
-    init_engine(app.config['NEWSITE_DB_STRING'])
-    init_dicom(app.config['DICOM_DB_STRING'])
+    init_engine(app.config['NEWSITE_DB_STRING'], pool_recycle=300)
+    init_dicom(app.config['DICOM_DB_STRING'], pool_recycle=300)
     app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
     app.register_module(auth)

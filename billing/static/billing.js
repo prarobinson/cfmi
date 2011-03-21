@@ -1,6 +1,6 @@
 $().ready(function () {
     $("#browser").accordion({autoHeight: false});
-    $( "#datepicker" ).datepicker({
+    $("#datepicker").datepicker({
 	changeMonth: true,
 	changeYear: true,
 	showButtonPanel: true,
@@ -13,6 +13,25 @@ $().ready(function () {
 	    update_pi_browser(year, month);
 	    $("#browser").accordion({active: 1});
 	}});
+    $("#invdatepicker").datepicker({
+	changeMonth: true,
+	changeYear: true,
+	showButtonPanel: true,
+        dateFormat: 'MM yy',
+	onClose: function(dateText, inst) {
+	    var month =	$("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+	}});
+    $("gen_inv").click(function() { 
+            var month =	$("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+	    month = parseInt(month)+1;
+	    $.getJSON('/api/batch/gen_invoices', {
+		'year': year, 'month': month}, function (data) {
+		    console.warn(data);
+		})
+    });
 })
 
 function update_pi_browser (year, month) {

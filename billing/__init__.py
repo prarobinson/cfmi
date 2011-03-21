@@ -2,19 +2,19 @@ from flask import Flask, g, session
 
 from cfmi.common.database.newsite import init_engine, db_session
 from cfmi.common.auth.views import auth
-from cfmi.billing.views import api
-from cfmi.billing.views import frontend
+from cfmi.billing.views import api, frontend
+from cfmi.billing.settings import cache
 
 def create_app(testing=False):
     app = Flask(__name__)
-    app.config.setdefault('NEWSITE_DB_STRING', 'sqlite:///')
+    app.config.from_object('cfmi.billing.test_settings')
     if not testing:
         app.config.from_object('cfmi.billing.settings')
-        app.config['TESTING'] = True
     init_engine(app.config['NEWSITE_DB_STRING'], pool_recycle=300)
     app.register_module(api, url_prefix='/api')
     app.register_module(frontend)
     app.register_module(auth)
+    cache.init_app(app)
     from cfmi.billing.models import User
     # Establish hooks common to all modules
     @app.after_request

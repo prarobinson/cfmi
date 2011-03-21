@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime, date, timedelta
 from time import sleep
 
-from flask import session
+from flask import session, request
 
 from cfmi.billing import create_app
 
@@ -14,7 +14,7 @@ from cfmi.common.database.newsite import (
 class CfmiImagingTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app(testing=True)
-        self.client = self.app.test_client()
+        #self.client = self.app.test_client()
         self.ctx = self.app.test_request_context()
         self.ctx.push()
         drop_all()
@@ -83,14 +83,15 @@ class CfmiImagingTestCase(unittest.TestCase):
         drop_all()        
         self.ctx.pop()
 
-    def login(self, username, password):
-        return self.client.post('/login', data=dict(
+    def login(self, client, username):
+        password='fakepass'
+        return client.post('/login/', data=dict(
                 username=username,
                 password=password
                 ), follow_redirects=True)
 
-    def logout(self):
-        return self.client.get('/logout', follow_redirects=True)
+    def logout(self, client):
+        return client.get('/logout', follow_redirects=True)
 
     def test_can_query_all_objects(self):
         User.query.all()
@@ -115,8 +116,8 @@ class CfmiImagingTestCase(unittest.TestCase):
             assert proj in user.get_projects()
 
     def test_login_admin(self):
-        bob = self.login('admin', 'password')
-        print bob.data
-
+        with self.app.test_client() as c:
+            bob = self.login(c, 'admin')
+            
 if __name__ == "__main__":
     unittest.main()

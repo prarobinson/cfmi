@@ -1,4 +1,7 @@
 import os
+
+from flaskext.cache import Cache
+
 ## Billing App Settings
 
 DICOM_DB_STRING = \
@@ -9,7 +12,7 @@ NEWSITE_DB_STRING = \
 
 ## Flask Settings
 
-SECRET_KEY = ''
+SECRET_KEY = 'testing'
 DEBUG = True
 
 
@@ -25,3 +28,8 @@ EMAIL_REPLY_TO = "sn253@georgetown.edu"
 ## URL Settings
 URL_BASE = "http://localhost:5000/"
 ARCHIVE_DOWNLOAD_URL = URL_BASE + "download/"
+
+## Cache settings
+
+cache = Cache()
+CACHE_TYPE = 'simple'

@@ -19,38 +19,30 @@ body {
     background:#c6c3be;
 }
 
-.contentbox h1, .halfcontentbox h1, .thirdcontentbox h1 {
-    padding:5px 5px;
+.contentbox h1 {
+    padding:5px;
     margin:0;
     background-color:#628CB9;
 }
 
 .contentbox {
-    border-style:ridge;
-    border-width:3px;
     background:#fff;
     float:left;
-    padding:3px 3px;
-    width:938px;
+    width: 100%;
 }
 
-.halfcontentbox {
-    border-style:ridge;
-    border-width:3px;
-    background:#fff;
-    float:left;
-    padding:3px 3px;
-    width:461px;
-    margin-right:2px;
+.contentbox p {
+    padding:0 5px;
+    font-size:18px;
+    margin:0;
 }
 
-.thirdcontentbox {
-    border-style:ridge;
-    border-width:3px;
-    background:#fff;
-    float:left;
-    padding:3px 3px;
-    width:302px;
+.contentbox img {
+    padding: 5px 0 0 0;
+}
+
+.contentbox em {
+    padding:5px;
 }
 
 .return-link {
@@ -117,15 +109,36 @@ form input[type="submit"] {
     background-position: -760px 0;
 }
   
-#nav a:hover {
-    background-position-top:0 -39px;
+#browse:hover {
+    background-position:0 -39px;
+}
+
+#reconcile:hover {
+    background-position: -190px -39px;
+}
+
+#stats:hover {
+    background-position: -380px -39px;
+}
+
+#batch:hover {
+    background-position: -570px -39px;
+}
+
+#home:hover {
+    background-position: -760px -39px;
 }
 
 #header {
     height:144px;
 }
 
-.halfcontentbox p {
-    font-size:18px;
-    margin:0 15px;
+.batchform input[type=button] {
+    margin:5px auto;
+    display:block;
+    width:50%;
+}
+
+#stat_scanner {
+    margin:5px 0 0 0;
 }

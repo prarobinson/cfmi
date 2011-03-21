@@ -5,13 +5,14 @@ from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
     flash, send_file, escape, current_app, Module)
 
+from cfmi.billing.settings import cache
 from cfmi.billing.models import (User, Project, Session, Problem, Invoice, 
-                                 db_session)
+                                 Subject, db_session)
 from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 
 from cfmi.billing.utils import (
-    total_ytd, total_last_month, limit_month, gchart_ytd_url)
+    fiscal_year, total_last_month, limit_month, gchart_ytd_url)
 
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm
@@ -33,9 +34,14 @@ def reconcile():
 
 @frontend.route('/stats/')
 @superuser_only
+@cache.cached(86400)
 def statistics():
-    return render_template('stats.html', ytd=total_ytd(), lastmonth=total_last_month(),
-                           gchart_ytd_url=gchart_ytd_url())
+    return render_template(
+        'stats.html', ytd=fiscal_year(), lastyear=fiscal_year(2010), 
+        lastmonth=total_last_month(), gchart_ytd_url=gchart_ytd_url(), 
+        sessions=len(Session.query.all()), subjects=len(Subject.query.all()),
+        hours=int(round(sum(
+                (session.duration() for session in Session.query.all()))/3600)))
 
 @frontend.route('/batch/')
 @superuser_only

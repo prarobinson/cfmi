@@ -173,7 +173,7 @@ class Invoice(Base):
     project_id = Column(Integer, 
                         ForeignKey('billing_projects.id'))
     date = Column(Date)
-    reconciled = Column(Boolean)
+    reconciled = Column(Boolean, default=False)
 
     project = relationship(Project, backref=backref('invoices', 
                                                     order_by=date))

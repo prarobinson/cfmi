@@ -7,11 +7,11 @@ from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
     flash, send_file, escape, jsonify, current_app, Module)
 
-from cfmi.billing.models import User, Project, Session, Invoice, Problem
+from cfmi.billing.models import User, Project, Session, Invoice, Problem, db_session
 from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 
-from cfmi.billing.utils import limit_month
+from cfmi.billing.utils import limit_month, active_projects
 
 api = Module(__name__)
 
@@ -43,7 +43,7 @@ def flatten(obj, attrib_filter=None):
 
 def safe_eval(f):
     @functools.wraps(f)
-    def wrapier(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
         except NameError:
@@ -52,7 +52,7 @@ def safe_eval(f):
         except AttributeError:
             ## existing non-model class access attempted
             abort(403)
-    return wrapier
+    return wrapper
 
 # Views
 
@@ -94,8 +94,31 @@ def admin_list_pi():
 #             proj, attrib_filter=[
 #                 'shortname', 'id']) for proj in active_pi_projects]
 #     return jsonify({'piuname':pi.username, 'object_list': flat_list})
+
+@api.route('/batch/gen_invoices')
+@superuser_only
+def gen_invoices():
+    if not 'year' in request.args and 'month' in request.args:
+        abort(403)
+    year = int(request.args['year'])
+    month = int(request.args['month'])
+    invoice_date = date(year, month, 1)
+    projs = active_projects(year, month)
+    count = 0
+    for project in projs:
+        if not len(Invoice.query.filter(
+                Invoice.project==project).filter(
+                Invoice.date==invoice_date).all()):
+            # If the invoice exists already, don't bother
+            inv = Invoice()
+            inv.project = project
+            inv.date = invoice_date
+            db_session.add(inv)
+            db_session.commit()
+            count += 1
+    return jsonify(new_invoices=count, status="Success")
     
-    
+
 @api.route('/db/<model>/<int:id>')
 @login_required
 @safe_eval
