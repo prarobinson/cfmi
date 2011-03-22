@@ -1,2 +1,31 @@
 {% extends "layout.html" %}
 
+{% block content %}
+<div class="contentbox">
+  <h1>Outstanding Invoices</h1>
+  <div class="subcontent">
+    <table>
+      <tr>
+        <th>Project:</th>
+        <th>Invoice Date:</th>
+        <th>PI:</th>
+        <th>Amount Due:</th>
+        <th>Actions:</th>
+      </tr>
+      {% for inv in invoice_list %}
+      <tr>
+        <td>{{ inv.project.shortname() }}</td>
+        <td>{{ inv.date.strftime("%b %Y") }}</td>
+        <td>{{ inv.project.pi.name }}</td>
+        <td>{{ inv.total() }}</td>
+        <td>
+          <a href="/invoice/{{ inv.id }}/">View</a>
+          <a href="/invoice/{{ inv.id }}/delete">Delete</a>
+          <a href="/invoice/{{ inv.id }}/paid">Paid</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

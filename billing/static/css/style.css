@@ -168,6 +168,10 @@ a:hover { color: #036; }
  * Author: Shawn Nock nock@nocko.org 
  */
 
+th {
+    font-weight:bold;
+}
+
 .ui-datepicker-calendar {
     display: none;
 }
@@ -179,12 +183,6 @@ a:hover { color: #036; }
 .packed_4_col {
     float:left;
     width:210px;
-    list-style-type:none;
-}
-
-.packed_2_col {
-    float:left;
-    width:420px;
     list-style-type:none;
 }
 
@@ -244,6 +242,7 @@ label {
     text-align: right;
     margin-right: 25px;
     width: 150px;
+    padding-top:10px;
 }
 
 textarea {

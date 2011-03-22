@@ -29,8 +29,36 @@ def index():
 @frontend.route('/reconcile/')
 @superuser_only
 def reconcile():
-    outstanding = Invoice.query.filter(Invoice.reconciled==False)
+    outstanding = Invoice.query.filter(Invoice.reconciled==False).order_by(Invoice.date)
     return render_template('reconcile.html', invoice_list=outstanding)
+
+@frontend.route('/invoice/<int:id>/')
+@superuser_only
+def invoice_view(id):
+    inv = Invoice.query.get(id)
+    if not inv:
+        abort(404)
+    return inv.render()
+
+@frontend.route('/invoice/<int:id>/delete')
+@superuser_only
+def invoice_delete(id):
+    inv = Invoice.query.get(id)
+    if not inv:
+        abort(404)
+    db_session.delete(inv)
+    db_session.commit()
+    return redirect(url_for('reconcile'))
+
+@frontend.route('/invoice/<int:id>/paid')
+@superuser_only
+def invoice_paid(id):
+    inv = Invoice.query.get(id)
+    if not inv:
+        abort(404)
+    inv.reconciled = True
+    db_session.commit()
+    return redirect(url_for('reconcile'))
 
 @frontend.route('/stats/')
 @superuser_only

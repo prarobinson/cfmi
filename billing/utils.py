@@ -4,19 +4,7 @@ from datetime import date, timedelta
 from cfmi.billing.settings import cache
 from cfmi.billing.models import User, Session, Project, Invoice, Problem
 
-## Utility functions that really don't need to crowd up views.py
-
-def total_ytd():
-    year = date.today().year if date.today().month >= 7 else date.today().year-1
-    year_start = date(year, 7, 1)
-    target_scans = Session.query.filter(
-            Session.sched_start>=year_start).filter(
-            Session.approved==True).filter(
-            Session.cancelled==False).filter(
-            Session.sched_start<=date.today())
-    total = sum(float(x.cost()) for x in target_scans)
-    print total, len(target_scans.all())
-    return "${0:.2f}".format(total)
+## Business logic that doesn't need to crowd up the views
 
 @cache.memoize(241920)
 def fiscal_year(year=None):
@@ -61,7 +49,6 @@ def limit_month(queryset, year, month):
     min_date = date(year, month, 1)
     max_date = date(year, month, numdays)
     if not queryset.first().__class__ is Session:
-        print queryset.first().__class__
         queryset = queryset.join(Session)
     return queryset.filter(Session.sched_start>=min_date).filter(
         Session.sched_start<=max_date).filter(

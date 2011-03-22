@@ -7,14 +7,14 @@
 <h1>Invoice: {{ pi.name }}'s Group</h1>
 <em>{{ date.strftime("%b %Y") }}</em>
 <div class="subcontent">
-<table class="invoice wide">
+<table>
 <tr>
-  <td>Session</td>
-  <td>Project</td>
-  <td>Subject ID</td>
-  <td>Scheduled By:</td>
-  <td>Duration</td>
-  <td>Cost</td>
+  <th>Session:</th>
+  <th>Project:</th>
+  <th>Subject ID:</th>
+  <th>Scheduled By:</th>
+  <th>Duration:</th>
+  <th>Cost:</th>
 </tr>
 {% for project in pi.pi_projects %}
 {% for scan in project.invoice_scans(date.year, date.month) %}

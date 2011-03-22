@@ -1,14 +1,17 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="span-7"><p></div>
-<div class="span-10 last">
+<div class="span-6 invisible">spacer</div>
+<div class="span-12 last">
   <div class="contentbox batchform">
     <h1>Batch Operations</h1>
+    <div class="subcontentbox">
     <p><label>Select month:</label><input type="text" id="invdatepicker" />
     <input type="button" id="gen_inv" value="Generate Invoices" /></p>
     <hr />
-    <p><input type="button" id="gen_stat" value="Trigger Statistics Update" /></p>
+    <p><input type="button" id="gen_stat" value="Trigger Statistics
+    Update" /></p>
+    </div>
 </div>
 
 {% endblock %}

@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from flask import render_template
 
 from cfmi.common.database import newsite
+from cfmi.billing.settings import cache
 
 # Methods to support objects in a billing context
 
@@ -94,6 +95,7 @@ def invoice_render(self):
                            invoice=self,
                            total=self.total())
 
+@cache.memoize(600)
 def invoice_total(self):
     total = sum(float(scan.cost()) for scan in self.sessions())
     return "%.2f" % total
