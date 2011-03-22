@@ -6,7 +6,7 @@
 <div class="contentbox">
 <h1>Invoice: {{ pi.name }}'s Group</h1>
 <em>{{ date.strftime("%b %Y") }}</em>
-<hr />
+<div class="subcontent">
 <table class="invoice wide">
 <tr>
   <td>Session</td>
@@ -42,5 +42,6 @@
   <td>{{ total }} USD </td>
 </tr>
 </table>
+</div>
 </div>
 {% endblock %}

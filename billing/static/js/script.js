@@ -1,3 +1,5 @@
+/* Author: Shawn Nock <nock@nocko.org> */
+
 $().ready(function () {
     $("#browser").accordion({autoHeight: false});
     $("#datepicker").datepicker({
@@ -73,3 +75,28 @@ function update_project_browser (link, year, month) {
 }
 
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
