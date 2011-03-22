@@ -76,9 +76,90 @@ function update_project_browser (link, year, month) {
 
 */
 
+function Problem (id) {
+    this.type = 'problem';
+    this._persistant = false;
+    this.id = id;
+    if (this.id) {
+	ajax_fetch(this.type, this.id, this, function(data) {
+	    console.warn("In update callback");
+	    console.warn(data)
+	    this.session_id = data.session_id;
+	    this.description = data.description;
+	    this.duration = data.duration;
+	    this._persistant = true;
+	});
+    }
 
+    this.obj = function () {
+	return {
+		description: this.description,
+		duration: this.duration,
+		session_id: this.session_id
+	       }
+    }
 
+    this.push = function () {
+	if (this._persistant == true) 
+	{
+	    ajax_update(this.type, this.id, this.obj(), this, function (data) { 
+		console.warn("Updated Problem: "+data.id);
+		this._persistant = true;
+	    })
+	}
+	else
+	{
+	    ajax_create(this.type, this.obj(), this, function (data) { 
+		console.warn("Created Problem: "+data.id);
+		this.id = data.id
+		this._persistant = true;
+	    })
+	}
+    }	    
+    this.rm = function () {
+	console.warn(this);
+	ajax_delete(this.type, this.id, this, function (data) { 
+	    console.warn("Deleted Problem: " +this.id);
+	    this._persistant = false;
+	});
+    }
+    this.pull = function () {
+	ajax_fetch(this.type, this.id, this, this._update);
+    }
+}
 
+function ajax_fetch(type, id, context, callback) {
+    var url = '/api/db/'+type+'/'+id;
+    $.ajax({url: url, success: callback, context: context});
+}
+
+function ajax_create(type, object, context, callback) {
+    var url = '/api/db/'+type;
+    $.ajax({url: url,
+	    data: JSON.stringify(object),
+	    type: "POST",
+	    contentType: 'application/json',
+	    success: callback
+	   });
+}
+
+function ajax_update(type, id, object, context, callback) {
+    var url = '/api/db/'+type+'/'+id;
+    $.ajax({url: url,
+	    data: JSON.stringify(object),
+	    type: "PUT",
+	    contentType: 'application/json',
+	    success: callback
+	   });
+}
+
+function ajax_delete(type, id, context, callback) {
+    var url = '/api/db/'+type+'/'+id;
+    $.ajax({url: url,
+	    type: "DELETE",
+	    success: callback
+	   });
+}
 
 
 

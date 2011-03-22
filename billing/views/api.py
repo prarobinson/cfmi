@@ -30,6 +30,9 @@ def flatten(obj, attrib_filter=None):
         for key in obj.__dict__:
             if not key in attrib_filter:
                 del goodstuff[key]
+    for key, value in obj.__dict__.iteritems():
+        if isinstance(value, (User, Project, Session, Invoice, Problem)):
+            del goodstuff[key]
     for key, value in goodstuff.iteritems():
         if isinstance(value, datetime):
             goodstuff[key]=value.strftime("%m/%d/%Y %H:%M")
@@ -56,14 +59,6 @@ def safe_eval(f):
 
 # Views
 
-@api.route('/db/<model>')
-@superuser_only
-@safe_eval
-def model_summary(model=None):
-    object_list = eval(model.capitalize()).query.all()
-    flat_list = [flatten(object) for object in object_list]
-    return jsonify({'model': model, 'object_list': flat_list})
-
 @api.route('/activePI')
 @superuser_only
 def admin_list_pi():
@@ -78,22 +73,6 @@ def admin_list_pi():
             pi_list.append(project.pi)
     flat_list = [flatten(pi, attrib_filter=['name','username','id']) for pi in pi_list]
     return jsonify({'name':"active_pis", 'object_list': flat_list})
-
-# @api.route('/activePI/<user_id>')
-# @superuser_only
-# def admin_list_pi_projects(user_id):
-#     pi = User.query.get(user_id)
-#     active_pi_projects = []
-#     for proj in pi.pi_projects:
-#         if len(proj.invoice_scans(
-#                 int(request.args['year']), int(request.args['month']))):
-#             proj.shortname = proj.shortname()
-#             active_pi_projects.append(proj)
-#     flat_list = [
-#         flatten(
-#             proj, attrib_filter=[
-#                 'shortname', 'id']) for proj in active_pi_projects]
-#     return jsonify({'piuname':pi.username, 'object_list': flat_list})
 
 @api.route('/batch/gen_invoices')
 @superuser_only
@@ -118,12 +97,39 @@ def gen_invoices():
             count += 1
     return jsonify(new_invoices=count, status="Success")
     
+@api.route('/db/<model>', methods=['GET', 'POST'])
+@superuser_only
+#@safe_eval
+def model_summary(model):
+    if request.method == 'POST':
+        inst = eval(model.capitalize())()
+        for key, value in request.json.iteritems():
+            inst.__setattr__(key, value)
+        db_session.add(inst)
+        db_session.commit()
+        return model_instance(model, inst.id) 
 
-@api.route('/db/<model>/<int:id>')
-@login_required
-@safe_eval
+    object_list = eval(model.capitalize()).query.all()
+    flat_list = [flatten(object) for object in object_list]
+    return jsonify({'model': model, 'object_list': flat_list})
+
+@api.route('/db/<model>/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@superuser_only
+#@safe_eval
 def model_instance(model, id):
     inst = eval(model.capitalize()).query.get(id)
+    if request.method == 'DELETE':
+        if not inst:
+            abort(404)
+        db_session.delete(inst)
+        db_session.commit()
+        return jsonify({})
+    if request.method == 'PUT':
+        if not inst:
+            abort(404)
+        for key, value in request.json.iteritems():
+            inst.__setattr__(key, value)
+        db_session.commit()
     if not inst:
         abort(404)
     return jsonify(flatten(inst))
@@ -138,23 +144,3 @@ def user_info():
 def user_project_list():
     return jsonify({
             "projects": [flatten(proj) for proj in g.user.get_projects()]})
-
-@api.route('/projects/<int:project_id>')
-@authorized_users_only
-def user_project_detail(project_id):
-    proj = Project.query.get(project_id)
-    if not proj:
-        abort(404)
-    today = date.today()
-    year = today.year
-    month = today.month
-    if 'year' in request.args:
-        year = int(request.args['year'])
-    if 'month' in request.args:
-        month = int(request.args['month'])
-    flatproj = flatten(proj)
-    if month > 0 and month <= 12:
-        flatproj['sessions'] = [
-            flatten(session) for session in proj.invoice_scans(year, month)]
-    else: flatproj['sessions'] = []
-    return jsonify(flatproj)
