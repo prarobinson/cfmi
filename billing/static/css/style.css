@@ -172,6 +172,19 @@ th {
     font-weight:bold;
 }
 
+header h1 {
+    font-size:48px;
+    font-family: 'Cardo', arial, serif;
+    float:left;
+    position:absolute;
+    top:85px;
+    left:10px;
+}
+
+header {
+    position:relative;
+}
+
 .ui-datepicker-calendar {
     display: none;
 }
@@ -194,14 +207,22 @@ body {
 .contentbox h1 {
     padding:5px;
     margin:0;
-    background-color:#628CB9;
+    background-color:#89a1ba;
     font-size:x-large;
+    font-family: 'Cardo', arial, serif;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    line-height:29px;
+    font-style:none;
+    font-weight:normal;
 }
 
 .contentbox {
     background:#fff;
     float:left;
     width: 100%;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
 }
 
 .contentbox p {
@@ -266,50 +287,22 @@ form input[type="submit"] {
 }
 
 #nav a {
-    background-image: url('/static/nav_sprite.png');
+    background:#89a1ba;
     width:190px;
     height:36px;
     float:left;
+    text-align:center;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    font-family: 'Cardo', arial, serif;
+    font-size:x-large;
+    text-decoration:none;
+    color:#000;
+    line-height:36px;
 }
 
-#browse {
-    background-position: 0 0;
-}
-
-#reconcile {
-    background-position: -190px 0;
-}
-
-#stats {
-    background-position: -380px 0;
-}
-
-#batch {
-    background-position: -570px 0;
-}
-
-#home {
-    background-position: -760px 0;
-}
-  
-#browse:hover {
-    background-position:0 -39px;
-}
-
-#reconcile:hover {
-    background-position: -190px -39px;
-}
-
-#stats:hover {
-    background-position: -380px -39px;
-}
-
-#batch:hover {
-    background-position: -570px -39px;
-}
-
-#home:hover {
-    background-position: -760px -39px;
+#nav a:hover {
+    background:#b9c6d2;
 }
 
 .batchform input[type=button] {

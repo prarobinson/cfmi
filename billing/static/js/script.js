@@ -25,7 +25,7 @@ $().ready(function () {
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
             $(this).datepicker('setDate', new Date(year, month, 1));
 	}});
-    $("gen_inv").click(function() { 
+    $("#gen_inv").click(function() { 
             var month =	$("#ui-datepicker-div .ui-datepicker-month :selected").val();
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
 	    month = parseInt(month)+1;
@@ -34,7 +34,27 @@ $().ready(function () {
 		    console.warn(data);
 		})
     });
-})
+    $(".inv_link").click(function () {
+	var inv_id = /\/([0-9]+)\//.exec(this.href)[1];
+	if (this.href.match(/delete/)) {
+	    ajax_delete('invoice', inv_id, function () {
+		$("#"+inv_id).hide();
+	    });
+	    return false;
+	}
+	if (this.href.match(/paid/)) {
+	    ajax_update('invoice', inv_id, {reconciled: true}, function () {
+		$("#"+inv_id).hide();
+	    });
+	    return false;
+	}
+    });
+    $("#gen_stat").click(function () {
+	$.getJSON('/api/batch/update_stats', function () {
+	    console.log("Tried to clear cache");
+	})
+    });
+});
 
 function update_pi_browser (year, month) {
     $.getJSON('/api/activePI', {
@@ -49,83 +69,6 @@ function update_pi_browser (year, month) {
 	    $("#pi_selector").html(out);
 	    $("#pi_selector").find("li").addClass("packed_4_col");
 	});
-}
-
-/* Not sure that we need this functionality, leaving it in 
-   so I don't have to rewrite it incase I am wrong
-
-function update_project_browser (link, year, month) {
-    pi_id = link.id;
-    console.debug(year, month);
-    $.getJSON('/api/activePI/'+pi_id, {
-	'year': year, 'month': month}, function (data) {
-	    var out = '<ul>';
-	    $.each(data.object_list, function (i, project) {
-		out += '<li><a href="#" id="'+project.id+'">'
-		out += project.shortname+'</a></li>'
-	    });
-	    out += '<li><a href="/'+data.piuname+'/'+year+'/'+month+'/">'
-	    out += 'All Projects</a></li></ul>'
-	    $("#project_selector").html(out);
-	    $("#project_selector").find("li").addClass("packed_2_col");
-	    $("#project_selector").find("a").click(function () {
-		
-	    });
-	});
-}
-
-*/
-
-function Problem (id) {
-    this.type = 'problem';
-    this._persistant = false;
-    this.id = id;
-    if (this.id) {
-	ajax_fetch(this.type, this.id, this, function(data) {
-	    console.warn("In update callback");
-	    console.warn(data)
-	    this.session_id = data.session_id;
-	    this.description = data.description;
-	    this.duration = data.duration;
-	    this._persistant = true;
-	});
-    }
-
-    this.obj = function () {
-	return {
-		description: this.description,
-		duration: this.duration,
-		session_id: this.session_id
-	       }
-    }
-
-    this.push = function () {
-	if (this._persistant == true) 
-	{
-	    ajax_update(this.type, this.id, this.obj(), this, function (data) { 
-		console.warn("Updated Problem: "+data.id);
-		this._persistant = true;
-	    })
-	}
-	else
-	{
-	    ajax_create(this.type, this.obj(), this, function (data) { 
-		console.warn("Created Problem: "+data.id);
-		this.id = data.id
-		this._persistant = true;
-	    })
-	}
-    }	    
-    this.rm = function () {
-	console.warn(this);
-	ajax_delete(this.type, this.id, this, function (data) { 
-	    console.warn("Deleted Problem: " +this.id);
-	    this._persistant = false;
-	});
-    }
-    this.pull = function () {
-	ajax_fetch(this.type, this.id, this, this._update);
-    }
 }
 
 function ajax_fetch(type, id, context, callback) {
@@ -143,7 +86,7 @@ function ajax_create(type, object, context, callback) {
 	   });
 }
 
-function ajax_update(type, id, object, context, callback) {
+function ajax_update(type, id, object, callback) {
     var url = '/api/db/'+type+'/'+id;
     $.ajax({url: url,
 	    data: JSON.stringify(object),
@@ -153,13 +96,67 @@ function ajax_update(type, id, object, context, callback) {
 	   });
 }
 
-function ajax_delete(type, id, context, callback) {
+function ajax_delete(type, id, callback) {
     var url = '/api/db/'+type+'/'+id;
     $.ajax({url: url,
 	    type: "DELETE",
 	    success: callback
 	   });
 }
+
+
+// function Problem (id) {
+//     this.type = 'problem';
+//     this._persistant = false;
+//     this.id = id;
+//     if (this.id) {
+// 	ajax_fetch(this.type, this.id, this, function(data) {
+// 	    console.warn("In update callback");
+// 	    console.warn(data)
+// 	    this.session_id = data.session_id;
+// 	    this.description = data.description;
+// 	    this.duration = data.duration;
+// 	    this._persistant = true;
+// 	});
+//     }
+
+//     this.obj = function () {
+// 	return {
+// 		description: this.description,
+// 		duration: this.duration,
+// 		session_id: this.session_id
+// 	       }
+//     }
+
+//     this.push = function () {
+// 	if (this._persistant == true) 
+// 	{
+// 	    ajax_update(this.type, this.id, this.obj(), this, function (data) { 
+// 		console.warn("Updated Problem: "+data.id);
+// 		this._persistant = true;
+// 	    })
+// 	}
+// 	else
+// 	{
+// 	    ajax_create(this.type, this.obj(), this, function (data) { 
+// 		console.warn("Created Problem: "+data.id);
+// 		this.id = data.id
+// 		this._persistant = true;
+// 	    })
+// 	}
+//     }	    
+//     this.rm = function () {
+// 	console.warn(this);
+// 	ajax_delete(this.type, this.id, this, function (data) { 
+// 	    console.warn("Deleted Problem: " +this.id);
+// 	    this._persistant = false;
+// 	});
+//     }
+//     this.pull = function () {
+// 	ajax_fetch(this.type, this.id, this, this._update);
+//     }
+// }
+
 
 
 

@@ -12,6 +12,7 @@ from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 
 from cfmi.billing.utils import limit_month, active_projects
+from cfmi.billing.settings import cache
 
 api = Module(__name__)
 
@@ -96,6 +97,12 @@ def gen_invoices():
             db_session.commit()
             count += 1
     return jsonify(new_invoices=count, status="Success")
+
+@api.route('/batch/update_stats')
+@superuser_only
+def update_stats():
+    cache.delete('view//stats/')
+    return jsonify({})
     
 @api.route('/db/<model>', methods=['GET', 'POST'])
 @superuser_only
