@@ -101,7 +101,7 @@ def gen_invoices():
 @api.route('/batch/update_stats')
 @superuser_only
 def update_stats():
-    cache.delete('view//stats/')
+    cache.delete_memoized(['month_total', 'fical_year'])
     return jsonify({})
     
 @api.route('/db/<model>', methods=['GET', 'POST'])
