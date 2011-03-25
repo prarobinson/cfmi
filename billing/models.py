@@ -90,7 +90,6 @@ def invoice_sessions(self):
                 Session.cancelled==False).order_by(
                 Session.sched_start).all()
 
-@cache.memoize(600)
 def invoice_total(self):
     total = sum(float(scan.cost()) for scan in self.sessions())
     return "%.2f" % total
