@@ -152,7 +152,8 @@ body, select, input, textarea {
   /* #444 looks better than black: twitter.com/H_FJ/statuses/11800719859 */
   color: #444;
   /* Set your base font here, to apply evenly */
-  /* font-family: Georgia, serif;  */
+  font-family: Georgia, serif;
+  line-height:18px;
 }
 
 /* Headers (h1, h2, etc) have no default font-size or margin; define those yourself */
@@ -226,17 +227,11 @@ body {
 }
 
 .contentbox p {
-    padding:0 5px;
     font-size:large;
     margin:0;
 }
 
-.contentbox img {
-    padding: 5px 0 0 0;
-}
-
 .contentbox em {
-    padding:5px;
     font-style:italic;
 }
 
@@ -246,16 +241,12 @@ body {
 
 .return-link {
     float:right;
+    text-align:right;
 }
 
 form div {
-    margin: 0.5em;
     float: left;
     width: 100%;
-}
-
-#correction {
-    text-align:center;
 }
 
 label {
@@ -299,6 +290,25 @@ form input[type="submit"] {
     text-decoration:none;
     color:#000;
     line-height:36px;
+}
+
+a.button {
+    background:#89a1ba;
+    text-align:center;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    text-decoration:none;
+    color:#000;
+    height:18px;
+    display:block;
+    line-height:18px;
+    float:left;
+    padding:0 3px;
+    margin:1px 1px;
+}
+
+a.button:hover {
+    background:#b9c6d2;
 }
 
 #nav a:hover {

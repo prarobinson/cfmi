@@ -24,7 +24,14 @@ frontend = Module(__name__)
 @frontend.route('/')
 @login_required
 def index():
+    if not g.user.is_superuser():
+        return redirect(url_for("user_portal"))
     return render_template('index.html')
+
+@frontend.route('/user/')
+@login_required
+def user_portal():
+    return render_template('user.html')
 
 @frontend.route('/reconcile/')
 @superuser_only
@@ -32,13 +39,21 @@ def reconcile():
     outstanding = Invoice.query.filter(Invoice.reconciled==False).order_by(Invoice.date)
     return render_template('reconcile.html', invoice_list=outstanding)
 
-@frontend.route('/invoice/<int:id>/')
-@superuser_only
-def invoice_view(id):
-    inv = Invoice.query.get(id)
+@frontend.route('/invoice/<int:invoice_id>/')
+@authorized_users_only
+def invoice_view(invoice_id):
+    inv = Invoice.query.get(invoice_id)
     if not inv:
         abort(404)
-    return inv.render()
+    return render_template('invoice.html', invoice=inv)
+
+@frontend.route('/invoice/<int:invoice_id>/print')
+@authorized_users_only
+def invoice_print(invoice_id):
+    inv = Invoice.query.get(invoice_id)
+    if not inv:
+        abort(404)
+    return render_template('invoice_print.html', invoice=inv)
 
 @frontend.route('/invoice/<int:id>/delete')
 @superuser_only
@@ -61,15 +76,12 @@ def invoice_paid(id):
     return redirect(url_for('reconcile'))
 
 @frontend.route('/stats/')
-@superuser_only
-@cache.cached(86400)
+@login_required
 def statistics():
     return render_template(
         'stats.html', ytd=fiscal_year(), lastyear=fiscal_year(2010), 
         lastmonth=total_last_month(), gchart_ytd_url=gchart_ytd_url(), 
-        sessions=len(Session.query.all()), subjects=len(Subject.query.all()),
-        hours=int(round(sum(
-                (session.duration() for session in Session.query.all()))/3600)))
+        sessions=len(Session.query.all()), subjects=len(Subject.query.all()))
 
 @frontend.route('/batch/')
 @superuser_only
@@ -85,7 +97,7 @@ def invoice(id):
     return inv.render()
 
 @frontend.route('/<pi_uname>/<int:year>/<int:month>/')
-@login_required
+@authorized_users_only
 def pi_month_view(pi_uname, year, month):
     pi = User.query.filter(User.username==pi_uname).first()
     if not pi:

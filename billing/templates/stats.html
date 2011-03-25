@@ -7,23 +7,27 @@
 <div id="stat_left" class="span-12">
   <div id="stat_rev" class="contentbox">
     <h1>Revenue</h1>
-    <p>Fiscal Year to Date: <span class="return-link">{{ ytd }}</span></p>
-    <p>Last Year: <span class="return-link">{{ lastyear }}</span></p>
-    <hr />
-    <p>Last Month: <span class="return-link">{{ lastmonth }}</span></p> 
+    <div class="subcontent">
+      <p>Fiscal Year to Date: <span class="return-link">{{ ytd }}</span></p>
+      <p>Last Year: <span class="return-link">{{ lastyear }}</span></p>
+      <hr />
+      <p>Last Month: <span class="return-link">{{ lastmonth }}</span></p>
+    </div>
   </div>
   <div id="stat_scanner" class="contentbox">
     <h1>Lifetime Scanner Usage</h1>
-    <p>Sessions: <span class="return-link">{{ sessions }}</span></p>
-    <p>Subjects: <span class="return-link">{{ subjects }}</span></p>
-    <p>Billed Hours: <span class="return-link">{{ hours }}</span></p>
+    <div class="subcontent">
+      <p>Sessions: <span class="return-link">{{ sessions }}</span></p>
+      <p>Subjects: <span class="return-link">{{ subjects }}</span></p>
+    </div>
   </div>
 </div>
 <div id="stat_right" class="span-12 last">
   <div class="contentbox">
     <h1>Monthly Revenue: Year to Date</h1>
-    <img src="{{ gchart_ytd_url }}" width="463" height="400" alt="Monthly Revenue - This Year" />
+    <div class="subcontent">
+      <img src="{{ gchart_ytd_url }}" width="463" height="400" alt="Monthly Revenue - This Year" />
+    </div>
   </div>
 </div>
-
 {% endblock %}

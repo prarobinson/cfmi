@@ -6,6 +6,7 @@ from cfmi.billing.models import User, Session, Project, Invoice, Problem
 
 ## Business logic that doesn't need to crowd up the views
 
+@cache.memoize(2592000)
 def fiscal_year(year=None):
     if year:
         year_start = date(year - 1, 7, 1)
@@ -28,6 +29,7 @@ def total_last_month():
     month = today.month-1
     return "${0:.2f}".format(month_total(year, month))
 
+@cache.memoize(86400)
 def month_total(year, month):
     total = sum(float(x.cost()) for x in sessions_from_month(year, month))
     return total
@@ -57,6 +59,7 @@ def active_projects(year, month):
     return limit_month(Project.query, year, month)
 
 # Cached for a month, since it is expensive and changes monthly
+@cache.cached(2592000, key_prefix='gchart_ytd')
 def gchart_ytd_url():
     months = {1: 'Jan',
               2: 'Feb',

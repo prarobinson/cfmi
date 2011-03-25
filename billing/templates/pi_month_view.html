@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 
-{% block title %}Invoice - {{ pi.name }} - {{ date.strftime("%b %Y")}}{% endblock %}
+{% block title %}Summary - {{ pi.name }} - {{ date.strftime("%b. %Y")}}{% endblock %}
 
 {% block content %}
 <div class="contentbox">
-<h1>Invoice: {{ pi.name }}'s Group</h1>
+<h1>Summary: {{ pi.name }}'s Group<span class="return-link">
+    {{ date.strftime("%b. %Y") }}
+</h1>
 <em>{{ date.strftime("%b %Y") }}</em>
 <div class="subcontent">
 <table>

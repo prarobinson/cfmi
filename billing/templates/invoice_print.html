@@ -26,8 +26,7 @@
       {% for scan in invoice.sessions() %}
       <tr>
         <td>
-          <a href="{{ url_for('edit_session', session_id=scan.id) }}">
-            {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a>
+            {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}
         </td>
         <td>{{ scan.subject.name }}</td>
         {% if scan.user.name %}
@@ -37,7 +36,7 @@
         {% endif %}
         <td>{{ scan.dur_hours() }} hrs. 
           {% if scan.is_corrected() %}
-          <a href="{{ url_for('problem', id=scan.id) }}">*</a>{% endif %}</td>
+          *{% endif %}</td>
         <td>{{ scan.cost() }} USD </td>
       </tr>
       {% endfor %}
@@ -51,4 +50,12 @@
     </table>
     </div>
   </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  $("#nav").hide();
+  window.print();
+  $(".button").hide()
+</script>
 {% endblock %}

@@ -7,9 +7,10 @@
 {% block content %}
 <div class="contentbox">
   <h1>{{ scan.user.name }} - {{ scan }}</h1>
+  <div class="subcontent">
   <em>{{ scan.project }} - {{ scan.subject }}</em>
   <span class="return-link">
-    <a href="{{ url_for('pi_month_view', year=scan.sched_start.year,
+    <a class="button" href="{{ url_for('pi_month_view', year=scan.sched_start.year,
              month=scan.sched_start.month,
              pi_uname=scan.project.pi.username) }}">
       Return to invoice
@@ -35,5 +36,6 @@
     {% endif %}
     <div><input type="submit" value="Submit Changes" /></div>
   </form>
+  </div>
 </div>
 {% endblock %}

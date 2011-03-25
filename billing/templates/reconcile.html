@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% block title %}Reconcile{% endblock %}
+
 {% block content %}
 <div class="contentbox">
   <h1>Outstanding Invoices</h1>
@@ -17,9 +19,9 @@
         <td>{{ inv.date.strftime("%b %Y") }}</td>
         <td>{{ inv.project.pi.name }}</td>
         <td>
-          <a class="inv_link" href="/invoice/{{ inv.id }}/">View</a>
-          <a class="inv_link" href="/invoice/{{ inv.id }}/delete">Delete</a>
-          <a class="inv_link" href="/invoice/{{ inv.id }}/paid">Paid</a>
+          <a class="inv_link button" href="/invoice/{{ inv.id }}/">View</a>
+          <a class="inv_link button" href="/invoice/{{ inv.id }}/delete">Delete</a>
+          <a class="inv_link button" href="/invoice/{{ inv.id }}/paid">Paid</a>
         </td>
       </tr>
       {% endfor %}

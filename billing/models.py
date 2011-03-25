@@ -90,11 +90,6 @@ def invoice_sessions(self):
                 Session.cancelled==False).order_by(
                 Session.sched_start).all()
 
-def invoice_render(self):
-    return render_template('invoice.html', 
-                           invoice=self,
-                           total=self.total())
-
 @cache.memoize(600)
 def invoice_total(self):
     total = sum(float(scan.cost()) for scan in self.sessions())
@@ -124,7 +119,6 @@ Problem = newsite.Problem
 
 Invoice = newsite.Invoice
 Invoice.sessions = invoice_sessions
-Invoice.render = invoice_render
 Invoice.total = invoice_total
 
 Subject = newsite.Subject

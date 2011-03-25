@@ -13,6 +13,8 @@ def authorized_users_only(f):
     @functools.wraps(f)
     @login_required
     def wrapper(*args, **kwargs):
+        subj_str = None
+        project = None
         if g.user.is_superuser():
             return f(*args, **kwargs)
         if 'filename' in kwargs:
@@ -20,11 +22,18 @@ def authorized_users_only(f):
         if 'subject' in kwargs:
             subj_str = kwargs['subject']
         if 'session_id' in kwargs:
-            project = Session.query.get(
-                kwargs['session_id']).project
+            session = Session.query.get(
+                kwargs['session_id'])
+            if not session: abort(404)
+            project = session.project
         if 'invoice_id' in kwargs:
-            project = Invoice.query.get(
-                kwargs['invoice_id']).project
+            invoice = Invoice.query.get(
+                kwargs['invoice_id'])
+            if not invoice: abort(404)
+            project = invoice.project
+        if 'pi_uname' in kwargs:
+            if g.user.username == kwargs['pi_uname']:
+                return f(*args, **kwargs)
         #if self.app.config['CFMIAUTH_USING_DICOM']:
         #    if 'series_id' in kwargs:
         #        subj_str = Dicom.Series.query.get(
@@ -34,8 +43,9 @@ def authorized_users_only(f):
                 Subject.name==subj_str).first().project
         if 'project_id' in kwargs:
             project = Project.get(kwargs['project_id'])
-        if project.auth(g.user):
-            return f(*args, **kwargs)
+        if project:
+            if project.auth(g.user):
+                return f(*args, **kwargs)
         return abort(403)
     return wrapper
 

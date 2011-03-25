@@ -11,7 +11,7 @@
        Remove this if you use the .htaccess -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title></title>
+  <title>CFMI Billing: {% block title %}{% endblock %}</title>
   <meta name="description" content="CFMI Billing Application">
   <meta name="author" content="Shawn Nock nock@nocko.org">
 
@@ -43,13 +43,27 @@
     <header>
       <h1>Billing</h1>
       <img src="/static/titlebar.png" />
+      {% if g.user and g.user.is_superuser() %}
       <div id="nav" class="span-24 last">
         <a id="browse" href="/">Browse</a>
         <a id="reconcile" href="/reconcile">Reconcile</a>
         <a id="stats" href="/stats">Statistics</a>
         <a id="batch" href="/batch">Batch</a>
-        <a id="home" href="http://cfmi.georgetown.edu/">Home</a>
+        <a id="home" href="/logout">Logout</a>
       </div>
+      {% else %}
+      <div id="nav" class="span-24 last">
+        <a id="browse" href="/user">Portal</a>
+        <a id="reconcile" href="/reconcile"></a>
+        <a id="stats" href="/stats">Statistics</a>
+        <a id="batch" href="/batch"></a>
+        {% if not g.user %}
+        <a id="home" href="http://cfmi.georgetown.edu/">Home</a>
+        {% else %}
+        <a id="home" href="/logout">Logout</a>
+        {% endif %}
+      </div>
+      {% endif %}
     </header>
     <div id="main" role="main">
       {% block content %}
@@ -73,6 +87,8 @@
   <!-- scripts concatenated and minified via ant build script-->
   <script src="/static/js/plugins.js"></script>
   <script src="/static/js/script.js"></script>
+  {% block js %}
+  {% endblock %}
   <!-- end scripts-->
 
 
