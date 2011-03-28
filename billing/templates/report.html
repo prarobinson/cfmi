@@ -1,0 +1,12 @@
+{% from "_macros.html" import render_project %}
+{% extends "layout.html" %}
+
+{% block title %}Monthly Report - {{ date.strftime("%b. %Y") }}{% endblock %}
+
+{% block content %}
+
+{% for project in projects %}
+    {{ render_project(project, date) }}
+{% endfor %}
+
+{% endblock %}

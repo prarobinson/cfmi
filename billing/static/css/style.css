@@ -224,6 +224,7 @@ body {
     width: 100%;
     -moz-border-radius: 5px;
     border-radius: 5px;
+    margin-bottom: 5px;
 }
 
 .contentbox p {

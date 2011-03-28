@@ -12,7 +12,7 @@ from cfmi.common.auth.decorators import (superuser_only, login_required,
                                          authorized_users_only)
 
 from cfmi.billing.utils import (
-    fiscal_year, total_last_month, limit_month, gchart_ytd_url)
+    fiscal_year, total_last_month, limit_month, gchart_ytd_url, active_projects)
 
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm, ProblemRequestForm
@@ -87,6 +87,16 @@ def statistics():
 @superuser_only
 def batch():
     return render_template('batch.html')
+
+@frontend.route('/batch/report')
+@superuser_only
+def batch_report():
+    if not 'year' in request.args and 'month' in request.args:
+        abort(404)
+    year = int(request.args['year'])
+    month = int(request.args['month'])
+    projects = active_projects(year, month)
+    return render_template('report.html', projects=projects, date=date(year, month, 1) )
 
 @frontend.route('/invoice/<invoice_id>')
 @authorized_users_only

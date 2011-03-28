@@ -28,7 +28,7 @@ def project_invoice_scans(self, year, month):
                  
 def project_invoice_total(self, year, month):
     total = 0.0
-    for scan in self.invoice_sessions(year, month):
+    for scan in self.invoice_scans(year, month):
         total += float(scan.cost())
     return "%.2f" % total
 

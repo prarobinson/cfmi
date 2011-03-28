@@ -34,6 +34,15 @@ $().ready(function () {
 		    console.warn(data);
 		})
     });
+    $("#gen_report").click(function() {
+	var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+        var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+	month = parseInt(month)+1;
+	var url = "/batch/report?year="+encodeURIComponent(year);
+	url += "&month="+encodeURIComponent(month);
+	window.location.href = url;
+    });
+	
     $(".inv_link").click(function () {
 	var inv_id = /\/([0-9]+)\//.exec(this.href)[1];
 	if (this.href.match(/delete/)) {
