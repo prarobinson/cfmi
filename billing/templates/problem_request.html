@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}Problem Report: Session #{{ scan.id }}{% endblock %}
+
+{% block content %}
+
+<div class="contentbox">
+  <h1>Submit a discrepancy: Session #{{ scan.id }}</h1>
+  <div class="subcontent">
+    <form id="userproblem" method="POST" action="usersubmit">
+    {{ form.csrf }}
+    <div>{{ form.problem.label }} {{ form.problem() }}</div>
+    <div>{{ form.duration.label }} {{ form.duration() }}</div>
+    <div><input type="submit" value="Submit"></div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+

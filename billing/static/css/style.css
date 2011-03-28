@@ -245,6 +245,7 @@ body {
 }
 
 form div {
+    margin: 0.5em;
     float: left;
     width: 100%;
 }
@@ -259,14 +260,24 @@ label {
 
 textarea {
     width:700px;
+    margin: 18px 0 0 0;
 }
 
 header {
     float:left;
 }
 
+input, select  {
+    margin:9px 0 0 0;
+}
+
+input[type="text"], input[type="password"], input.text, input.title, textarea, select {
+    margin: 9px 0 0 0;
+}
+
 form input[type="submit"] {
     margin-left: 175px;
+    margin-top:0;
 }
 
 #nav {
@@ -323,6 +334,46 @@ a.button:hover {
 
 #stat_scanner {
     margin:5px 0 0 0;
+}
+
+/* Session styles */
+
+.session_value {
+    width:700px;
+    display:block;
+    float:right;
+    margin:9px 0;
+}
+
+.session_label {
+    text-align:right;
+    display:block;
+    width:200px;
+    float:left;
+    margin:9px 0;
+    font-weight:bold;
+}
+
+textarea#session_notes {
+    float:left;
+    width:600px;
+    font-size:12px;
+    margin: 9px 0px 20px 40px;
+}
+
+/* User Problem Form Styles */
+
+#userproblem textarea {
+    width:500px;
+    margin: 18px 0px;
+}
+
+#userproblem input[type=text] {
+    margin:18px 0px;
+}
+
+#userproblem {
+    margin-left:100px;
 }
 
 /**

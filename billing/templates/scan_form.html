@@ -19,13 +19,13 @@
   </span><br />
   Duration: {{ scan.dur_hours() }} hrs.{% if scan.is_corrected() %}
   (Billing corrected from {{ scan.dur_actual() }} hrs.: {{ scan.billing_comment() }}
-  [<a href="{{ url_for('del_problem', id=scan.id) }}">delete</a>]
-  [<a href="{{ url_for('problem', id=scan.id) }}">edit</a>])
+  [<a href="{{ url_for('del_problem', session_id=scan.id) }}">delete</a>]
+  [<a href="{{ url_for('problem', session_id=scan.id) }}">edit</a>])
   {% else %}
-  [<a href="{{ url_for('problem', id=scan.id) }}">change duration</a>]
+  [<a href="{{ url_for('problem', session_id=scan.id) }}">change duration</a>]
   {% endif %}
   <hr />
-  <form action="" method="post">
+  <form id="session_form" action="" method="post">
     {{ form.render()|safe }}
     {% if scan.is_corrected() %}
     <div id="correction">

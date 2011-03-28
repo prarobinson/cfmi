@@ -1,4 +1,5 @@
 from formalchemy import FieldSet
+from flaskext.wtf import Form, TextField, Required, TextAreaField, FloatField
 
 from cfmi.billing.models import Session, Problem
 
@@ -24,3 +25,7 @@ class ProblemForm(FieldSet):
     def __init__(self):
         FieldSet.__init__(self, Problem)
         self.configure(exclude=[self['session']])
+
+class ProblemRequestForm(Form):
+    problem = TextAreaField("Describe the nature of our error:", [Required()])
+    duration = FloatField("What is the accurate duration, in hours, of this scan?", [Required()])

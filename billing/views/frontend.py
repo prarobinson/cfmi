@@ -15,7 +15,7 @@ from cfmi.billing.utils import (
     fiscal_year, total_last_month, limit_month, gchart_ytd_url)
 
 from formalchemy import FieldSet
-from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm
+from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm, ProblemRequestForm
 
 frontend = Module(__name__)
 
@@ -147,9 +147,10 @@ def edit_session(session_id):
             flash("Failed to update database")
             db_session.rollback()
         return redirect(request.url)
-        
-    return render_template('scan_form.html', scan=scan,
-                           form=fs)
+    if g.user.is_superuser():    
+        return render_template('scan_form.html', scan=scan,
+                               form=fs)
+    return render_template('session.html', scan=scan)
 
 @frontend.route('/session/<int:id>/problem/delete/')
 @superuser_only
@@ -169,10 +170,10 @@ def del_problem(id):
         flash("Database error")
     return redirect(url_for('edit_session', session_id=id))   
         
-@frontend.route('/session/<int:id>/problem/', methods=['GET', 'POST'])
-@superuser_only
-def problem(id):
-    scan = Session.query.get(id)
+@frontend.route('/session/<int:session_id>/problem/', methods=['GET', 'POST'])
+@authorized_users_only
+def problem(session_id):
+    scan = Session.query.get(session_id)
     if not scan:
         abort(404)
     prob = scan.problem if scan.problem else Problem(scan)
@@ -183,6 +184,8 @@ def problem(id):
         db_session.expunge(prob)
     fs = ProblemForm().bind(prob, data=request.form or None)
     if request.method=='POST' and fs.validate():
+        if not g.user.is_superuser():
+            abort(403)
         fs.sync()
         try:
             prob.scan = scan
@@ -193,7 +196,19 @@ def problem(id):
         except:
             flash("Failed: Could not update database")
             db_session.rollback()
+    if g.user.is_superuser():
+        return render_template('problem_form.html', scan=scan,
+                               form=fs)
+    return render_template('problem_request.html', scan=scan, form=ProblemRequestForm())
 
-    return render_template('problem_form.html', scan=scan,
-                           form=fs)
-
+@frontend.route('/session/<int:session_id>/problem/usersubmit', methods=['POST'])
+@authorized_users_only
+def problem_request(session_id):
+    scan = Session.query.get(session_id)
+    if not scan:
+        abort(404)
+    form = ProblemRequestForm()
+    if form.validate_on_submit():
+        flash("We've received your report, you'll be notified of any changes to your invoice")
+        return redirect(url_for("edit_session", session_id=session_id))
+    return redirect(url_for('problem', session_id=session_id))
