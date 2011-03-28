@@ -50,7 +50,7 @@
         <a id="stats" href="/stats">Statistics</a>
         <a id="batch" href="/batch">Batch</a>
         <a id="home" href="/logout">Logout</a>
-      </div>
+      </div> <!-- -End of #nav -->
       {% else %}
       <div id="nav" class="span-24 last">
         <a id="browse" href="/user">Portal</a>
@@ -62,18 +62,17 @@
         {% else %}
         <a id="home" href="/logout">Logout</a>
         {% endif %}
-      </div>
+      </div> <!-- end of alternate #nav -->
       {% endif %}
     </header>
     <div id="main" role="main">
       {% block content %}
       {% endblock %}
-    </div>
-  </div>
-  <footer>
-
-  </footer>
-</div> <!--! end of #container -->
+    </div> <!-- end of #main -->
+    <footer>
+      
+    </footer>
+  </div> <!--! end of #container -->
 
 
   <!-- JavaScript at the bottom for fast page loading -->
