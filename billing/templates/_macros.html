@@ -1,6 +1,6 @@
-{% macro render_project(project, date) %}
+{% macro render_project(project, date, title) %}
 <div class="contentbox">
-  <h1>Invoice: {{ project }}<span class="return-link">
+  <h1>{% if title %}{{ title }}: {% endif %}{{ project }}<span class="return-link">
       {{ date.strftime("%b. %Y") }}</span></h1>
   <div class="subcontent">
   <em>PI: {{ project.pi.name }}</em>
@@ -26,11 +26,7 @@
             {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a>
         </td>
         <td>{{ scan.subject.name }}</td>
-        {% if scan.user.name %}
-        <td>{{ scan.user.name }}</td>
-        {% else %}
-        <td>{{ scan.user.username }}</td>
-        {% endif %}
+        <td>{{ print_user(scan.user) }}</td>
         <td>{{ scan.dur_hours() }} hrs. 
           {% if scan.is_corrected() %}
           <a href="{{ url_for('problem', session_id=scan.id) }}">*</a>{% endif %}</td>
@@ -49,3 +45,11 @@
   </div>
 </div>
 {%- endmacro %} 
+
+{% macro print_user(user) -%}
+    {% if user.name %}
+        {{ user.name }}
+    {% else %}
+        {{ user.username }}
+    {% endif %}
+{% endmacro %}

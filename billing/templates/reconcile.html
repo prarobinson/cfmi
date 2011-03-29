@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_macros.html" import print_user %}
 
 {% block title %}Reconcile{% endblock %}
 
@@ -15,9 +16,9 @@
       </tr>
       {% for inv in invoice_list %}
       <tr id="{{ inv.id }}">
-        <td>{{ inv.project.shortname() }}</td>
+        <td>{{ inv.project.shortname(65) }}</td>
         <td>{{ inv.date.strftime("%b %Y") }}</td>
-        <td>{{ inv.project.pi.name }}</td>
+        <td>{{ print_user(inv.project.pi) }}</td>
         <td>
           <a class="inv_link button" href="/invoice/{{ inv.id }}/">View</a>
           <a class="inv_link button" href="/invoice/{{ inv.id }}/delete">Delete</a>

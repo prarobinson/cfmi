@@ -1,49 +1,12 @@
 {% extends "layout.html" %}
+{% from "_macros.html" import render_project %}
 
 {% block title %}Summary - {{ pi.name }} - {{ date.strftime("%b. %Y")}}{% endblock %}
 
 {% block content %}
-<div class="contentbox">
-<h1>Summary: {{ pi.name }}'s Group<span class="return-link">
-    {{ date.strftime("%b. %Y") }}
-</h1>
-<em>{{ date.strftime("%b %Y") }}</em>
-<div class="subcontent">
-<table>
-<tr>
-  <th>Session:</th>
-  <th>Project:</th>
-  <th>Subject ID:</th>
-  <th>Scheduled By:</th>
-  <th>Duration:</th>
-  <th>Cost:</th>
-</tr>
+
 {% for project in pi.pi_projects %}
-{% for scan in project.invoice_scans(date.year, date.month) %}
-<tr>
-  <td>
-    <a href="{{ url_for('edit_session', session_id=scan.id) }}">
-      {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a>
-  </td>
-  <td>{{ scan.project.shortname() }}</td>
-  <td>{{ scan.subject.name }}</td>
-  <td>{{ scan.user.username }}</td>
-  <td>{{ scan.dur_hours() }} hrs. 
-    {% if scan.is_corrected() %}
-    <a href="{{ url_for('problem', id=scan.id) }}">*</a>{% endif %}</td>
-  <td>{{ scan.cost() }} USD </td>
-</tr>
+    {{ render_project(project, date, '') }}
 {% endfor %}
-{% endfor %}
-<tr>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td>Total Cost:</td>
-  <td>{{ total }} USD </td>
-</tr>
-</table>
-</div>
-</div>
+
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_macros.html" import print_user %}
 
 {% block title %}Session #{{ scan.id }}{% endblock %}
 
@@ -30,7 +31,7 @@
     </div>
     <div>
       <span class="session_label">Scheduled by</span>
-      <span class="session_value">{{ scan.user.name }}</span>
+      <span class="session_value">{{ print_user(scan.user) }}</span>
     </div>
     <div>
       <span class="session_label">Subject</span>

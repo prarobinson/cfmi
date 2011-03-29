@@ -89,12 +89,12 @@ class Project(Base):
     def __repr__(self):
         return self.shortname()
 
-    def shortname(self):
+    def shortname(self, limit=55):
         if not self.name:
             return "<Untitled Project>"
-        if len(self.name) <= 55:
+        if len(self.name) <= limit:
             return self.name
-        return self.name[:55]+"..."
+        return self.name[:limit-3]+"..."
 
     def get_subjects(self):
         return [subject.name for subject in self.subjects]

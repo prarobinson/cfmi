@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_macros.html" import print_user %}
 
 {% block title %}User Portal{% endblock %}
 
@@ -18,7 +19,7 @@
         <tr>
           <td><a href="{{ url_for('invoice', invoice_id=invoice.id) }}">
             {{ invoice.date.strftime("%b. %Y") }}</a></td>
-          <td>{{ invoice.project.shortname() }}</td>
+          <td title="{{ invoice.project.name }}">{{ invoice.project.shortname(50) }}</td>
           <td>{{ invoice.total() }}</td>
         </tr>
         {% endfor %}
@@ -49,7 +50,7 @@
           {% for scan in recent %}
           <td><a href="{{ url_for('edit_session', session_id=scan.id) }}">
             {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a></td>
-          <td>{{ scan.user.name }}</td>
+          <td>{{ print_user(scan.user) }}</td>
           <td>{{ scan.dur_hours() }} hrs.</td>
           {% endfor %}
         </tr>
