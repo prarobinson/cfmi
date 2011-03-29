@@ -166,6 +166,7 @@ function clear_message () {
     $('#nav').slideDown();
 }
 
+
 // function Problem (id) {
 //     this.type = 'problem';
 //     this._persistant = false;

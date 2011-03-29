@@ -4,10 +4,7 @@
       {{ date.strftime("%b. %Y") }}</span></h1>
   <div class="subcontent">
   <em>PI: {{ project.pi.name }}</em>
-  <span class="return-link">
-    <a class="button" href="print">Print</a>
-  </span>
-  {% if project.rx_num.startswith("RX") %}
+  {% if project.rx_num and project.rx_num.startswith("RX") %}
     <br />RX Num: {{ project.rx_num }}
     {% endif %}
   <div class="subcontent">
