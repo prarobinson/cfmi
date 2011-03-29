@@ -1,5 +1,7 @@
 /* Author: Shawn Nock <nock@nocko.org> */
 
+var billing = {}; // Global variable container
+
 $().ready(function () {
     $("#browser").accordion({autoHeight: false});
     $("#datepicker").datepicker({
@@ -131,15 +133,18 @@ function ajax_delete(type, id, callback) {
 }
 
 function flash_message (cls, msg, timeout) {
+    clearTimeout(billing.flash_timer);
+    $('#nav').slideUp();
     $("#messages").slideDown('slow').removeClass().addClass(cls).text(msg);
     if (timeout === undefined) {
 	var timeout = 3000
     }
-    setTimeout(clear_message, timeout)
+    billing.flash_timer = setTimeout(clear_message, timeout)
 }
 
 function clear_message () {
     $("#messages").slideUp('slow');
+    $('#nav').slideDown();
 }
 
 // function Problem (id) {
