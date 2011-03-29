@@ -27,6 +27,20 @@ $().ready(function () {
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
             $(this).datepicker('setDate', new Date(year, month, 1));
 	}});
+    $("#user_datepicker").datepicker({
+	changeMonth: true,
+	changeYear: true,
+	showButtonPanel: true,
+        dateFormat: 'MM yy',
+        onClose: function(dateText, inst) { 
+            var month =	$("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+	    month = parseInt(month)+1
+	    $.getJSON('/api/user', function (data) {
+		window.location.href = '/'+data.username+'/'+year+'/'+month;
+	    })
+	}});
     $("#gen_inv").click(function() { 
             var month =	$("#ui-datepicker-div .ui-datepicker-month :selected").val();
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
@@ -44,7 +58,12 @@ $().ready(function () {
 	url += "&month="+encodeURIComponent(month);
 	window.location.href = url;
     });
-	
+    $("#spoof_user").click(function () {
+	user = $("#spoof_target").val()
+	$.getJSON('/api/batch/spoof/'+user, function () {
+	    window.location.href ="/user/";
+	});
+    });
     $(".inv_link").click(function () {
 	var inv_id = /\/([0-9]+)\//.exec(this.href)[1];
 	if (this.href.match(/delete/)) {

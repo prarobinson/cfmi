@@ -31,7 +31,15 @@ def index():
 @frontend.route('/user/')
 @login_required
 def user_portal():
-    return render_template('user.html')
+    today = date.today()
+    recent = []
+    unpaid = []
+    for project in g.user.projects:
+        # A kludgy way to get all the user's scans from the last month
+        recent += project.invoice_scans(today.year, today.month)
+        unpaid += Invoice.query.filter(
+            Invoice.project==project).filter(Invoice.reconciled==False).all()
+    return render_template('user.html', recent=recent, unpaid=unpaid)
 
 @frontend.route('/reconcile/')
 @superuser_only

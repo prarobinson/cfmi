@@ -4,4 +4,58 @@
 
 {% block content %}
 
+<div id="user-left" class="span-12">
+  <div class="contentbox">
+    <h1>Unpaid Invoices</h1>
+    <div class="subcontent">
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Project</th>
+          <th>Cost</th>
+        </tr>
+        {% for invoice in unpaid %}
+        <tr>
+          <td><a href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+            {{ invoice.date.strftime("%b. %Y") }}</a></td>
+          <td>{{ invoice.project.shortname() }}</td>
+          <td>{{ invoice.total() }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  {% if g.user.pi_projects %}
+  <div class="contentbox">
+    <h1>Monthly Summary</h1>
+    <div class="subcontent">
+      <p><label>Select a month:</label><input type="text" id="user_datepicker"></p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div id="user-right" class="span-12 last">
+  <div class="contentbox">
+    <h1>Recent Sessions</h1>
+    <div class="subcontent">
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Scheduled By</th>
+          <th>Duration</th>
+        </tr>
+        <tr>
+          {% for scan in recent %}
+          <td><a href="{{ url_for('edit_session', session_id=scan.id) }}">
+            {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - {{ scan.sched_end.strftime("%H:%M") }}</a></td>
+          <td>{{ scan.user.name }}</td>
+          <td>{{ scan.dur_hours() }} hrs.</td>
+          {% endfor %}
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

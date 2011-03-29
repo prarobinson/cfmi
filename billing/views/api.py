@@ -103,6 +103,15 @@ def gen_invoices():
 def update_stats():
     #cache.delete_memoized(['month_total', 'fical_year'])
     return jsonify({})
+
+@api.route('/batch/spoof/<username>')
+@superuser_only
+def spoof_user(username):
+    user = User.query.filter(User.username==username).first()
+    if not user:
+        abort(404)
+    session['user_id'] = user.id
+    return jsonify({})
     
 @api.route('/db/<model>', methods=['GET', 'POST'])
 @superuser_only
