@@ -162,10 +162,10 @@ def edit_session(session_id):
                                form=fs)
     return render_template('session.html', scan=scan)
 
-@frontend.route('/session/<int:id>/problem/delete/')
+@frontend.route('/session/<int:session_id>/problem/delete/')
 @superuser_only
-def del_problem(id):
-    scan = Session.query.get(id)
+def del_problem(session_id):
+    scan = Session.query.get(session_id)
     if not scan:
         abort(404)
     prob = scan.problem
@@ -174,11 +174,11 @@ def del_problem(id):
     try:
         db_session.delete(prob)
         db_session.commit()
-        flash("Removed billing correction")
+        flash("Success: Removed billing correction", category='success')
     except:
         db_session.rollback()
-        flash("Database error")
-    return redirect(url_for('edit_session', session_id=id))   
+        flash("Database error", category='error')
+    return redirect(url_for('edit_session', session_id=scan.id))   
         
 @frontend.route('/session/<int:session_id>/problem/', methods=['GET', 'POST'])
 @authorized_users_only
@@ -201,11 +201,11 @@ def problem(session_id):
             prob.scan = scan
             db_session.add(prob)
             db_session.commit()
-            flash("Sucess: Problem added or modified")
-            return redirect(url_for('edit_session', session_id=id))
+            flash("Sucess: Problem added or modified", category='success')
         except:
-            flash("Failed: Could not update database")
+            flash("Failed: Could not update database", category='error')
             db_session.rollback()
+        return redirect(url_for('edit_session', session_id=scan.id))    
     if g.user.is_superuser():
         return render_template('problem_form.html', scan=scan,
                                form=fs)

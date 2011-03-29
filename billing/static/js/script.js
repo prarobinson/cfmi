@@ -31,7 +31,7 @@ $().ready(function () {
 	    month = parseInt(month)+1;
 	    $.getJSON('/api/batch/gen_invoices', {
 		'year': year, 'month': month}, function (data) {
-		    console.warn(data);
+		    flash_message('info', data.new_invoices+' invoices generated.');
 		})
     });
     $("#gen_report").click(function() {
@@ -46,14 +46,16 @@ $().ready(function () {
     $(".inv_link").click(function () {
 	var inv_id = /\/([0-9]+)\//.exec(this.href)[1];
 	if (this.href.match(/delete/)) {
-	    ajax_delete('invoice', inv_id, function () {
+	    ajax_delete('invoice', inv_id, function (data) {
 		$("#"+inv_id).hide();
+		flash_message('info', 'Invoice #'+data.id+' Deleted');
 	    });
 	    return false;
 	}
 	if (this.href.match(/paid/)) {
-	    ajax_update('invoice', inv_id, {reconciled: true}, function () {
+	    ajax_update('invoice', inv_id, {reconciled: true}, function (data) {
 		$("#"+inv_id).hide();
+		flash_message('info', 'Marked Invoice #'+data.id+' as paid');
 	    });
 	    return false;
 	}
@@ -62,6 +64,17 @@ $().ready(function () {
 	$.getJSON('/api/batch/update_stats', function () {
 	    console.log("Tried to clear cache");
 	})
+    });
+    $("#messages").hide().addClass("info");
+    $("#prob_link").click(function () {
+	var prob_id = /\#([0-9]+)/.exec(this.href)[1];
+	if (this.href.match(/delete/)) {
+	    ajax_delete('problem', prob_id, function (data) {
+		$("#billing_correction").hide();
+		flash_message('info', 'Removed billing correction');
+	    });
+	    return false;
+	}
     });
 });
 
@@ -101,7 +114,9 @@ function ajax_update(type, id, object, callback) {
 	    data: JSON.stringify(object),
 	    type: "PUT",
 	    contentType: 'application/json',
-	    success: callback
+	    success: function (data) {
+		callback(data);
+	    }
 	   });
 }
 
@@ -109,10 +124,23 @@ function ajax_delete(type, id, callback) {
     var url = '/api/db/'+type+'/'+id;
     $.ajax({url: url,
 	    type: "DELETE",
-	    success: callback
+	    success: function (data) {
+		callback(data);
+	    }
 	   });
 }
 
+function flash_message (cls, msg, timeout) {
+    $("#messages").slideDown('slow').removeClass().addClass(cls).text(msg);
+    if (timeout === undefined) {
+	var timeout = 3000
+    }
+    setTimeout(clear_message, timeout)
+}
+
+function clear_message () {
+    $("#messages").slideUp('slow');
+}
 
 // function Problem (id) {
 //     this.type = 'problem';

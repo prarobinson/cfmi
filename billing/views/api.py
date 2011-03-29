@@ -130,7 +130,7 @@ def model_instance(model, id):
             abort(404)
         db_session.delete(inst)
         db_session.commit()
-        return jsonify({})
+        return jsonify(flatten(inst))
     if request.method == 'PUT':
         if not inst:
             abort(404)
@@ -139,6 +139,7 @@ def model_instance(model, id):
         db_session.commit()
     if not inst:
         abort(404)
+    print inst
     return jsonify(flatten(inst))
 
 @api.route('/user')

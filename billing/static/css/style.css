@@ -629,6 +629,13 @@ textarea#session_notes {
     margin-left:100px;
 }
 
+/* messages div */
+
+#messages {
+    float:left;
+    display:block;
+    width:930px;
+}
 
 
 /**

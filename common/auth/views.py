@@ -11,13 +11,16 @@ def login():
         if request.method=='POST':
             uname = request.form['username']
             passwd = request.form['password']
+            if not uname:
+                flash('Invalid user/pass', category='error')
+                return render_template('login.html')
             user = User.query.filter(
                 User.username==uname).first()
             if user: 
                 if user.auth(passwd) or current_app.config['TESTING']:
                     session['user_id'] = user.id
             else:
-                flash('Invalid user/pass')
+                flash('Invalid user/pass', category='error')
         else:
             # For method 'GET'
             return render_template('login.html')
@@ -29,6 +32,6 @@ def login():
 @auth.route('/logout/')
 def logout():
     session.pop('user_id', None)
-    flash("You have been logged out")
+    flash("You have been logged out", category='info')
     return redirect(url_for('frontend.index'))
 

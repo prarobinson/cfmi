@@ -64,6 +64,7 @@
       {% endif %}
     </header>
     <div id="main" role="main">
+      <div id="messages"></div>
       {% block content %}
       {% endblock %}
     </div> <!-- end of #main -->
@@ -84,6 +85,15 @@
   <!-- scripts concatenated and minified via ant build script-->
   <script src="/static/js/plugins.js"></script>
   <script src="/static/js/script.js"></script>
+  {% with messages = get_flashed_messages() %}
+  <script type="text/javascript">
+    {% for category, msg in get_flashed_messages(with_categories=true) %}
+    setTimeout(function () { 
+        flash_message('{{ category }}', '{{ msg }}');
+    }, 300);
+    {% endfor %}
+  </script>
+  {% endwith %}
   {% block js %}
   {% endblock %}
   <!-- end scripts-->
