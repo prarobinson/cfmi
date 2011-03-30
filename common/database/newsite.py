@@ -7,8 +7,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String, Boolean, 
                         DateTime, Numeric, Text, Float, Date)
 
-from flask import render_template
-
 Base = declarative_base()
 
 engine = None
