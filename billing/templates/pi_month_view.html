@@ -6,7 +6,9 @@
 {% block content %}
 
 {% for project in pi.pi_projects %}
-    {{ render_project(project, date, '') }}
+    {% if project.is_active %}
+        {{ render_project(project, date, '') }}
+    {% endif %}
 {% endfor %}
 
 {% endblock %}
