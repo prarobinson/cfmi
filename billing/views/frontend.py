@@ -13,6 +13,7 @@ from cfmi.common.auth.decorators import (superuser_only, login_required,
 
 from cfmi.billing.utils import (
     fiscal_year, total_last_month, limit_month, gchart_ytd_url, active_projects)
+from cfmi.billing.views.api import invoice_send_email
 
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm, ProblemRequestForm
@@ -55,14 +56,6 @@ def invoice_view(invoice_id):
         abort(404)
     return render_template('invoice.html', invoice=inv)
 
-@frontend.route('/invoice/<int:invoice_id>/print')
-@authorized_users_only
-def invoice_print(invoice_id):
-    inv = Invoice.query.get(invoice_id)
-    if not inv:
-        abort(404)
-    return render_template('invoice_print.html', invoice=inv)
-
 @frontend.route('/invoice/<int:id>/delete')
 @superuser_only
 def invoice_delete(id):
@@ -81,6 +74,15 @@ def invoice_paid(id):
         abort(404)
     inv.reconciled = True
     db_session.commit()
+    return redirect(url_for('reconcile'))
+
+@frontend.route('/invoice/<int:invoice_id>/notify')
+@superuser_only
+def invoice_notify(invoice_id):
+    inv = Invoice.query.get(invoice_id)
+    if not inv:
+        abort(404)
+    invoice_send_email(invoice_id)
     return redirect(url_for('reconcile'))
 
 @frontend.route('/stats/')

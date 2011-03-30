@@ -40,13 +40,13 @@
 </div>
 {%- endmacro %} 
 
-{% macro print_user(user) -%}
-    {% if user.name %}
-        {{ user.name }}
-    {% else %}
-        {{ user.username }}
-    {% endif %}
-{% endmacro %}
+{% macro print_user(user) %}
+    {%- if user.name %}
+        {{- user.name }}
+    {%- else %}
+        {{- user.username }}
+    {%- endif %}
+{%- endmacro %}
 
 {% macro render_session(scan) -%}
 <a href="{{ url_for('edit_session', session_id=scan.id) }}">

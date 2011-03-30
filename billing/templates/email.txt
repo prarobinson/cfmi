@@ -1,0 +1,46 @@
+{% from "_macros.html" import print_user %}
+Dear {{ print_user(invoice.project.pi) }}:
+
+{% if not invoice.sent -%}
+You have a new invoice dated {{ invoice.date.strftime("%b. %Y") }} for
+the project:
+
+{{ invoice.project.name }}
+
+{% else -%}
+You have an updated invoice dated {{ invoice.date.strftime("%b. %Y")
+}} for the project:
+
+{{ invoice.project.shortname(76) }}
+
+{% endif %} 
+You may view the invoice and report any problems at the following
+address:
+
+https://billing.cfmi.georgetown.edu{{ url_for('invoice', invoice_id=invoice.id) }}
+
+{% if invoice.project.rx_num.startswith("RX") -%}
+
+The RX number on file for this project is {{ invoice.project.rx_num }}. 
+This account will be billed for your activity in 7 days.
+
+{% else -%}
+Please ensure that you send your payment within 7 days to:
+
+CFMI
+GUMC
+Preclinical Sciences Building LM-14
+3900 Reservoir Rd NW
+Washington, DC 20057
+
+{% endif %}
+Sincerely,
+
+Friendly CFMI Billing Robot
+
+-- 
+You are receiving this e-mail from the Center for Functional and
+Molecular Imaging at Georgetown University Medical Center because you
+are listed as the PI of a project that has accrued billable hours in
+the last month. Please direct any questions or comments to
+billing@cfmi.georgetown.edu or call 202-687-4161

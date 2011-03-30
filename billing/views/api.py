@@ -1,7 +1,9 @@
 import functools
+import smtplib
 from copy import copy
 from datetime import datetime, date
 from decimal import Decimal
+from email.mime.text import MIMEText
 
 from flask import (
     render_template, request, session, g, redirect, url_for, abort, 
@@ -58,6 +60,8 @@ def safe_eval(f):
             abort(403)
     return wrapper
 
+
+
 # Views
 
 @api.route('/activePI')
@@ -97,6 +101,26 @@ def gen_invoices():
             db_session.commit()
             count += 1
     return jsonify(new_invoices=count, status="Success")
+
+@api.route('/db/invoice/<int:invoice_id>/notify')
+@superuser_only
+def invoice_send_email(invoice_id):
+    invoice = Invoice.query.get(invoice_id)
+    if not invoice:
+        abort(404)
+    msg = MIMEText(render_template('email.txt', invoice=invoice))
+    msg['Subject'] = "CFMI Invoice: {0}".format(invoice.date.strftime("%b %Y"))
+    msg['From'] = 'billing@cfmi.georgetown.edu'
+    msg['Reply-to'] = 'billing@cfmi.georgetown.edu'
+    msg['To'] = invoice.project.pi.email
+    #msg['To'] = 'sn253@georgetown.edu'
+    s = smtplib.SMTP()
+    s.connect('localhost')
+    s.sendmail('billing@cfmi.georgetown.edu', ['sn253@georgetown.edu'], msg.as_string())
+    s.quit()
+    invoice.sent = True
+    db_session.commit()
+    return jsonify({})
 
 @api.route('/batch/update_stats')
 @superuser_only
