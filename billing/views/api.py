@@ -120,7 +120,8 @@ def invoice_send_email(invoice_id):
     s.quit()
     invoice.sent = True
     db_session.commit()
-    return jsonify({})
+    print invoice
+    return jsonify(flatten(invoice))
 
 @api.route('/batch/update_stats')
 @superuser_only

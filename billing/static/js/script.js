@@ -81,10 +81,10 @@ $().ready(function () {
 	    return false;
 	}
 	if (this.href.match(/notify/)) {
-	    $.getJSON('/api/db/invoice/'+inv_id+'/notify', function (invoice) {
-		ajax_fetch('project', invoice.project_id, {}, function (project) {
-		    ajax_fetch('user', project.pi_id, {}, function (user) {
-			flash_message('info', 'Sent e-mail to '+user.email);
+	    $.getJSON('/api/db/invoice/'+inv_id+'/notify', function (data) {
+		ajax_fetch('project', data.project_id, {}, function (data) {
+		    ajax_fetch('user', data.pi_id, {}, function (data) {
+			flash_message('info', 'Sent e-mail to '+data.email);
 		    });
 		});
 	    });

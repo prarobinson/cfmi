@@ -17,7 +17,7 @@ You have an updated invoice dated {{ invoice.date.strftime("%b. %Y")
 You may view the invoice and report any problems at the following
 address:
 
-https://billing.cfmi.georgetown.edu{{ url_for('invoice', invoice_id=invoice.id) }}
+https://billing.cfmi.georgetown.edu{{ url_for('frontend.invoice', invoice_id=invoice.id) }}
 
 {% if invoice.project.rx_num.startswith("RX") -%}
 

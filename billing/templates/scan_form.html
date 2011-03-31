@@ -8,15 +8,9 @@
 <div class="contentbox">
   <h1>{{ scan.user.name }} - {{ scan }}</h1>
   <div class="subcontent">
-  <em>{{ scan.project }} - {{ scan.subject }}</em>
   <span class="return-link">
-    <a class="button" href="{{ url_for('pi_month_view', year=scan.sched_start.year,
-             month=scan.sched_start.month,
-             pi_uname=scan.project.pi.username) }}">
-      Return to invoice
-    </a>
-    <br />Cost: {{ scan.cost() }}
-  </span><br />
+    Cost: {{ scan.cost() }}
+  </span>
   Duration: {{ scan.dur_hours() }} hrs.{% if scan.is_corrected() %}
   <span id="billing_correction">(Billing corrected from {{ scan.dur_actual() }} hrs.: {{ scan.billing_comment() }}
   [<a id="prob_link" href="{{ url_for('del_problem', session_id=scan.id) }}#{{ scan.problem.id }}">delete</a>]
