@@ -1,7 +1,7 @@
 import os
 
 from flask import (send_file, render_template, url_for, abort, 
-                   make_response, Module)
+                   make_response, Module, current_app)
 
 from cfmi.common.auth.decorators import (login_required,
                                          authorized_users_only)
@@ -28,17 +28,17 @@ def download(filename):
     in dataserver.py
 
     """
-    if not os.path.exists(frontend.config['DICOM_ARCHIVE_FOLDER']+filename):
+    if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
         # The file doesn't exist, lets start making it
         return make_archive(filename)
-    if os.stat(frontend.config['DICOM_ARCHIVE_FOLDER']+filename)[6] == 0:
+    if os.stat(current_app.config['DICOM_ARCHIVE_FOLDER']+filename)[6] == 0:
         # The file exits but is 0 bytes, the dataserver is working 
         # on it already, send them to the waiting page
         return render_template("processing.html", url=url_for(
                 'download', filename=filename))
 
     # If we've made it this far, we're ready to send the file
-    if not frontend.config["DEBUG"]:
+    if not current_app.config["DEBUG"]:
         # Use nginx for the heavy lifting on the prod setup
         r = make_response()
         r.headers['Content-Disposition'] = "attachment"
@@ -46,15 +46,15 @@ def download(filename):
         return r
     else:
         return send_file(
-            frontend.config['DICOM_ARCHIVE_FOLDER']+filename, 
+            current_app.config['DICOM_ARCHIVE_FOLDER']+filename, 
             as_attachment=True)
 
 @frontend.route('/download/<filename>/ready')
 @authorized_users_only
 def file_ready(filename):
-    if not os.path.exists(frontend.config['DICOM_ARCHIVE_FOLDER']+filename):
+    if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
         abort(404)
-    if not os.stat(frontend.config['DICOM_ARCHIVE_FOLDER']+filename)[6]:
+    if not os.stat(current_app.config['DICOM_ARCHIVE_FOLDER']+filename)[6]:
         abort(404)
     return render_template("processing.html", url=url_for(
                 'download', filename=filename))
