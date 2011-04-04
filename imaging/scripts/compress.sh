@@ -11,7 +11,7 @@ cd $TMPDIR;
 mkdir $SUBJECT
 cd $SUBJECT
 if [ ${EXTEN::3} == "nii" ]; then
-    convert.sh $SUBJECT ../ gz=FALSE > convert.log 2>&1
+    convert.sh $SUBJECT ./ gz=FALSE > convert.log 2>&1
     EXTEN=${EXTEN:4}
 else
     index=1
