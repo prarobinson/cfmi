@@ -5,7 +5,7 @@ from subprocess import call
 
 from flask import (Module, render_template, abort)
 
-from cfmi.common.database.dicom import Series 
+from cfmi.common.database.dicom import Series, Subject 
 
 def make_archive(filename):
     subject = filename.split(".")[0]
@@ -38,8 +38,8 @@ def find_series_or_404(subject):
     are filtered out
     
     """
-    r = Series.query.join(DicomSubject).filter(
-        DicomSubject.name==subject)
+    r = Series.query.join(Subject).filter(
+        Subject.name==subject)
     if not r.all():
         abort(404)
     if 'program' in request.args:
