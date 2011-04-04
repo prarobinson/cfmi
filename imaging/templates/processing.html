@@ -10,7 +10,7 @@ function checker() {
     http.open("HEAD", "{{ url }}/ready", false);
     http.send();
     if (http.status===200) {
-        window.location = "{{ url }}";
+        window.location.href = "{{ url }}";
         return;
     }
     setTimeout(checker, 5000);
