@@ -12,6 +12,7 @@ mkdir $SUBJECT
 cd $SUBJECT
 if [ ${EXTEN::3} == "nii" ]; then
     convert.sh $SUBJECT ./ gz=FALSE > convert.log 2>&1
+    mv convert.log $SUBJECT
     EXTEN=${EXTEN:4}
 else
     index=1
