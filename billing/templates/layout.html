@@ -89,7 +89,7 @@
   <script type="text/javascript">
     {% for category, msg in get_flashed_messages(with_categories=true) %}
     setTimeout(function () { 
-        flash_message('{{ category }}', '{{ msg }}');
+        flash_message('{{ category }}', '{{ msg|safe }}');
     }, 300);
     {% endfor %}
   </script>

@@ -1,3 +1,7 @@
+/* Author: Shawn Nock <nock@nocko.org> */
+
+var imaging = {}; // Global variable container
+
 function update_subject_detail (data) {
     var date = false, out = "";
     $("#subject_name").text(data.name);
@@ -93,4 +97,26 @@ $().ready(function () {
 	function () {
 	    $(this).removeClass("lit")
 	});
+    $("#messages").hide().addClass("info");
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

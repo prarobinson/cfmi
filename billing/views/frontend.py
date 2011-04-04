@@ -229,6 +229,7 @@ def problem_request(session_id):
         abort(404)
     form = ProblemRequestForm()
     if form.validate_on_submit():
-        flash("We've received your report, you'll be notified of any changes to your invoice")
+        flash("We've received your report, you'll be notified of any changes to your invoice", 
+              category='success')
         return redirect(url_for("edit_session", session_id=session_id))
     return redirect(url_for('problem', session_id=session_id))
