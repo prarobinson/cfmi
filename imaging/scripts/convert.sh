@@ -182,26 +182,26 @@ else
       done
       dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
       #mri_convert ${paths[${j}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag} 
-      niis=(`ls /tmp/${subjid}/ | grep "^[0-9]*.nii"`)
+      niis=(`ls /tmp/${subjid}/ | grep '^[0-9]*.nii'`)
+      orient=`ls /tmp/${subjid}/ | grep '^o'`
       if [ ${#niis[*]} == 1 ]; then
         mv -v /tmp/${subjid}/${niis[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag}
-      #else
-      #  is_field=`echo ${imgnames[$j]} | grep field`
-      #  if [ "${is_field}" != "" ]; then
-      #    type=`
-      #    
-      #    mv -v /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${ord}_echo1.nii${gzflag}
-      #    mv -v /tmp/${subjid}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${ord}_echo2.nii${gzflag}
-      #  fi
+        #mv -v /tmp/${subjid}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
+      else
+        is_field=`echo ${imgnames[$j]} | grep field`
+        if [ "${is_field}" != "" ]; then
+          type=`strings ${paths[$j]}/1.ACQ/${files[0]} | grep ORIGINAL | awk -F'\' '{print $3}'`
+          mv -v /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo1_${ord}.nii${gzflag}
+          mv -v /tmp/${subjid}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo2_${ord}.nii${gzflag}
+        fi
       fi   
-      
       rm /tmp/${subjid}/* 
     done
       
     for k in ${modality4D[*]}; do
       files=(`ls ${paths[${k}]}/1.ACQ/`)
       if [ ${#files[*]} == 1 ]; then
-        is_MOCO=`strings ${paths[${k}]}/1.ACQ/*.IMA | grep MOCO`
+        is_MOCO=`strings ${paths[${k}]}/1.ACQ/*.IMA | grep -e "MOCO"`
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag} ]; then
             ord=$((${ord} + 1))
@@ -220,7 +220,7 @@ else
           fi
           rm /tmp/${subjid}/*
         else
-          echo "${imgnames[${k}]} has a MOCO series associated with it... NOT converting the MOCO series."
+          echo "${imgnames[${k}]} is a MOCO series... NOT converting it."
         fi
       else
         echo "Multiple files found in ${paths[${k}]}."
@@ -231,7 +231,7 @@ else
  ####### Convert all images if imgtype is not set: ###########################################################
     echo "No image type specified (dti, t1, etc.,): converting all images for subject ${subjid}."
     for l in ${T1s[*]} ${PDs[*]} ${FLAIRs[*]}; do
-      echo "Converting ${paths[${l}]}/1.ACQ/"
+      echo "Converting ${paths[${j}]}/1.ACQ/"
       if [ -e ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} ]; then
         ord=$((${ord} + 1))
       else
@@ -245,12 +245,20 @@ else
       done
       dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
       #mri_convert ${paths[${l}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} 
-      if [ -e /tmp/${subjid}/o0.nii${gzflag} ]; then
-        mv -v /tmp/${subjid}/o0.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
+      niis=(`ls /tmp/${subjid}/ | grep '^[0-9]*.nii'`)
+      orient=`ls /tmp/${subjid}/ | grep '^o'`
+      if [ ${#niis[*]} == 1 ]; then
+        mv -v /tmp/${subjid}/${niis[0]} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
+        #mv -v /tmp/${subjid}/${orient} ${outdir}${subjid}/${imgnames[${l}]}_orient${ord}.nii${gzflag}
       else
-        mv -v /tmp/${subjid}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
-      fi
-      rm /tmp/${subjid}/*
+        is_field=`echo ${imgnames[$l]} | grep field`
+        if [ "${is_field}" != "" ]; then
+          type=`strings ${paths[$l]}/1.ACQ/${files[0]} | grep ORIGINAL | awk -F'\' '{print $3}'`
+          mv -v /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${type}_${ord}_echo1.nii${gzflag}
+          mv -v /tmp/${subjid}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${l}]}_${type}_${ord}_echo2.nii${gzflag}
+        fi
+      fi   
+      rm /tmp/${subjid}/* 
     done
     for pdt2 in ${PDT2s[*]}; do
       echo "Converting ${paths[${pdt2}]}/1.ACQ/"
@@ -274,22 +282,27 @@ else
     for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
       files=(`ls ${paths[${m}]}/1.ACQ/`)
       if [ ${#files[*]} == 1 ]; then
-        if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
-          ord=$((${ord} + 1))
+        is_MOCO=`strings ${paths[${m}]}/1.ACQ/*.IMA | grep -e "MOCO"`
+        if [ "${is_MOCO}" == "" ]; then
+          if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
+            ord=$((${ord} + 1))
+          else
+            ord=1
+          fi
+          for vol in `ls ${paths[${m}]}`; do
+            ln -s ${paths[${m}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
+          done
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
+          #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+          mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+          if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
+            mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
+            mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+          fi
+          rm /tmp/${subjid}/*
         else
-          ord=1
+          echo "${imgnames[${m}]} is a MOCO series... NOT converting it."
         fi
-        for vol in `ls ${paths[${m}]}`; do
-          ln -s ${paths[${m}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
-        done
-        dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
-        #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-        mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-        if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
-          mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
-          mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
-        fi
-        rm /tmp/${subjid}/*
       else
         echo "Multiple files found in ${paths[${m}]}."
         echo "For imgtype DTI this is probably just an FA or other computed map - skipping."
