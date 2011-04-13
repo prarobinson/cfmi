@@ -1,7 +1,7 @@
 import os
 
 from flask import (send_file, render_template, url_for, abort, 
-                   make_response, Module, current_app)
+                   make_response, Module, current_app, request)
 
 from cfmi.common.auth.decorators import (login_required,
                                          authorized_users_only)
@@ -28,6 +28,8 @@ def download(filename):
     in dataserver.py
 
     """
+    if request.method == 'HEAD':
+        return file_ready(filename)
     if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
         # The file doesn't exist, lets start making it
         return make_archive(filename)
@@ -45,12 +47,11 @@ def download(filename):
         r.headers['X-Accel-Redirect'] = "/dicom/" + filename
         return r
     else:
+        print "Ready to send file"
         return send_file(
             current_app.config['DICOM_ARCHIVE_FOLDER']+filename, 
             as_attachment=True)
 
-@frontend.route('/download/<filename>/ready')
-@authorized_users_only
 def file_ready(filename):
     if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
         abort(404)

@@ -1,19 +1,17 @@
 {% extends "layout.html" %}
 
-
-{% block javascript %}
+{% block js %}
 <script type="text/javascript">
 <!--
 
 function checker() {
-    var http=new XMLHttpRequest();
-    http.open("HEAD", "{{ url }}/ready", false);
-    http.send();
-    if (http.status===200) {
-        window.location.href = "{{ url }}";
-        return;
-    }
-    setTimeout(checker, 5000);
+    $.ajax({type: 'HEAD', url: '{{ url }}'}).success(
+        function () {
+            window.location.href = '{{ url }}';
+        }).error(
+        function () {
+            setTimeout(checker, 5000);
+        });
 }
 
 $(document).ready(checker)
@@ -23,18 +21,22 @@ $(document).ready(checker)
 {% endblock %}
 
 {% block content %}
-<div id="processing" class="box">
-  <h2>We're processing your files.</h2>
-  <p>This could take some time. You will be notified by e-mail when this processing is complete and
-    your file is ready for download. </p>
+<div class="span-24">
+  <div class="contentbox">
+    <h1>We're processing your files.</h1>
+    <div class="subcontent">
+      <p>This could take some time. You will be notified by e-mail when this processing is complete and
+      your file is ready for download. </p>
 
-  <p>The email address we have on file for you is: 
-    <em>{{ g.user.email }}</em> .<br /> If this is incorrect please
-    update it
-    <a href="http://cfmi.georgetown.edu/secured/profile.php">here</a>.</p>
-
-  <p>If choose to stick around, this page will redirect you to the file
-    when it is available. The file will eventually be available for
-    download <a href="{{ url }}">here</a></p>
+      <p>The email address we have on file for you is: 
+        <em>{{ g.user.email }}</em> .<br /> If this is incorrect please
+        update it
+        <a href="http://cfmi.georgetown.edu/secured/profile.php">here</a>.</p>
+      
+    <p>If choose to stick around, this page will redirect you to the file
+      when it is available. The file will eventually be available for
+      download <a href="{{ url }}">here</a></p>
+    </div>
+  </div>
 </div>
 {% endblock %}
