@@ -57,8 +57,8 @@ outdir=${2}
 
 # Get the paths and scan names for this subject, if they exist
 echo "Getting image info for ${subjid}..."
-paths=(`curl -k https://imaging.cfmi.georgetown.edu/api/path/${subjid}`)
-if [ "$paths[0]" = '<!DOCTYPE' ]; then
+paths=(`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${subjid}`)
+if [ ${#paths[0]} == 0 ]; then
   echo "No data found for subject ${subjid}...exiting"
 else
   if [ ! -e ${outdir}${subjid} ]; then
@@ -68,9 +68,14 @@ else
     mkdir /tmp/${subjid}
   fi
   for imgpath in ${paths[*]}; do
-    firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
+    if [ -d ${imgpath}/1.ACQ/ ]; then
+      firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
+      rootname=`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+    else
+      firstfile=`ls ${imgpath}/5.ACQ/ | head -1`
+	  rootname=`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+	fi
     imgfiles=(${imgfiles[*]} ${firstfile})
-    rootname=`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
     datestring=`echo ${imgpath} | awk -F"/" '{print $8 $9 $10}'`
     nameNdate="${rootname}_${datestring}"
     imgnames=(${imgnames[*]} ${nameNdate})
@@ -199,9 +204,14 @@ else
     done
       
     for k in ${modality4D[*]}; do
-      files=(`ls ${paths[${k}]}/1.ACQ/`)
-      if [ ${#files[*]} == 1 ]; then
+      if [ -d ${paths[${k}]}/1.ACQ/ ]; then
+        files=(`ls ${paths[${k}]}/1.ACQ/`)
         is_MOCO=`strings ${paths[${k}]}/1.ACQ/*.IMA | grep -e "MOCO"`
+      else
+        files=(`ls ${paths[${k}]}/5.ACQ/`)
+        is_MOCO=`strings ${paths[${k}]}/5.ACQ/*.IMA | grep -e "MOCO"`
+      fi  
+      if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag} ]; then
             ord=$((${ord} + 1))
@@ -211,12 +221,17 @@ else
           for vol in `ls ${paths[${k}]}`; do
             ln -s ${paths[${k}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
           done
-          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
-          #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
-          mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
-          if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
-            mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bvec
-            mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bval
+          if [ -e /tmp/${subjid}/1.ACQ.IMA ]; then
+            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
+            #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
+              mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
+              mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+            fi
+          else 
+            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/5.ACQ.IMA
+            mv -v /tmp/${subjid}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
           fi
           rm /tmp/${subjid}/*
         else
@@ -224,13 +239,13 @@ else
         fi
       else
         echo "Multiple files found in ${paths[${k}]}."
-        echo "For imgtype DTI this is probably just an FA or other computed map - skipping."
+        echo 'For imgtype DTI this is probably just an FA or other computed map; maybe a glm or t-map for fMRI... skipping.'
       fi
     done
   else
  ####### Convert all images if imgtype is not set: ###########################################################
     echo "No image type specified (dti, t1, etc.,): converting all images for subject ${subjid}."
-    for l in ${T1s[*]} ${PDs[*]} ${FLAIRs[*]}; do
+    for l in ${T1s[*]} ${PDs[*]} ${FLAIRs[*]} ${FIELDs[*]}; do
       echo "Converting ${paths[${j}]}/1.ACQ/"
       if [ -e ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} ]; then
         ord=$((${ord} + 1))
@@ -280,9 +295,14 @@ else
       rm /tmp/${subjid}/* 
     done
     for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
-      files=(`ls ${paths[${m}]}/1.ACQ/`)
-      if [ ${#files[*]} == 1 ]; then
+      if [ -d ${paths[${m}]}/1.ACQ/ ]; then
+        files=(`ls ${paths[${m}]}/1.ACQ/`)
         is_MOCO=`strings ${paths[${m}]}/1.ACQ/*.IMA | grep -e "MOCO"`
+      else
+        files=(`ls ${paths[${m}]}/5.ACQ/`)
+        is_MOCO=`strings ${paths[${m}]}/5.ACQ/*.IMA | grep -e "MOCO"`
+      fi
+      if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
             ord=$((${ord} + 1))
@@ -292,12 +312,17 @@ else
           for vol in `ls ${paths[${m}]}`; do
             ln -s ${paths[${m}]}/${vol}/* /tmp/${subjid}/${vol}.IMA
           done
-          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
-          #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-          mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-          if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
-            mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
-            mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+          if [ -e /tmp/${subjid}/1.ACQ.IMA ]; then
+            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/1.ACQ.IMA
+            #mri_convert /tmp/${subjid}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            mv -v /tmp/${subjid}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            if [ -e  /tmp/${subjid}/1ACQ.bvec ]; then
+              mv -v /tmp/${subjid}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
+              mv -v /tmp/${subjid}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+            fi
+          else 
+            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/5.ACQ.IMA
+            mv -v /tmp/${subjid}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
           fi
           rm /tmp/${subjid}/*
         else
@@ -305,10 +330,9 @@ else
         fi
       else
         echo "Multiple files found in ${paths[${m}]}."
-        echo "For imgtype DTI this is probably just an FA or other computed map - skipping."
+        echo 'For imgtype DTI this is probably just an FA or other computed map; maybe a glm or t-map for fMRI... skipping.'
       fi
     done 
   fi
-fi  
-  
-rm -r /tmp/${subjid}/
+fi 
+rm -r /tmp/${subjid}
