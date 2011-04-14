@@ -20,6 +20,9 @@ else
     for path in $PATHS; do
 	firstfile=`ls ${path}/1.ACQ/ | head -1`
 	rootname=`strings ${path}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+	if [ ! $rootname ]; then
+	    continue
+	fi
 	datestring=`echo ${path} | awk -F"/" '{print $8 $9 $10}'`
 	if [ $datestring != $dscache ]; then
 	    index=1

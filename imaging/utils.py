@@ -1,9 +1,11 @@
+import os
 import pickle
 import zmq
 from datetime import timedelta, date
 from subprocess import call
 
-from flask import (Module, render_template, abort, request, g, url_for)
+from flask import (Module, render_template, abort, request, g, url_for,
+                   current_app)
 
 from cfmi.common.database.dicom import Series, Subject 
 
@@ -23,9 +25,6 @@ def make_archive(filename):
     socket.send(
         pickle.dumps((g.user.email, subject, [x.get_path() for x in r], 
                       exten)))
-    status = socket.recv()
-    return render_template("processing.html", url=url_for(
-            'download', filename=filename))
 
 def find_series_or_404(subject):
     """ find_series_or_404
@@ -52,3 +51,12 @@ def find_series_or_404(subject):
         top = bot + oneday
         r = r.filter(Series.date<top).filter(Series.date>bot)
     return r
+
+def file_ready(filename):
+    path = current_app.config['DICOM_ARCHIVE_FOLDER']+filename
+    tmpfile = path+'.part'
+    if os.path.exists(path):
+        return True
+    if not os.path.exists(tmpfile):
+        make_archive(filename)
+    return False

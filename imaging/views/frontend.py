@@ -1,12 +1,10 @@
-import os
-
 from flask import (send_file, render_template, url_for, abort, 
                    make_response, Module, current_app, request)
 
 from cfmi.common.auth.decorators import (login_required,
                                          authorized_users_only)
 
-from cfmi.imaging.utils import make_archive, find_series_or_404                                       
+from cfmi.imaging.utils import make_archive, find_series_or_404, file_ready                                       
 
 frontend = Module(__name__)
 
@@ -28,35 +26,30 @@ def download(filename):
     in dataserver.py
 
     """
-    if request.method == 'HEAD':
-        return file_ready(filename)
-    if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
-        # The file doesn't exist, lets start making it
-        return make_archive(filename)
-    if os.stat(current_app.config['DICOM_ARCHIVE_FOLDER']+filename)[6] == 0:
-        # The file exits but is 0 bytes, the dataserver is working 
-        # on it already, send them to the waiting page
+    
+    if file_ready(filename):
+        return sendfile(filename)
+    else:
+        ## Hijack HEAD requests to check status, if the file is ready
+        if request.method == 'HEAD':
+            abort(404)
         return render_template("processing.html", url=url_for(
                 'download', filename=filename))
 
-    # If we've made it this far, we're ready to send the file
-    if not current_app.config["DEBUG"]:
+def sendfile(filename):
+    if current_app.config["DEBUG"]:
+        # Use flask during development
+        print "trying to sendfile"
+        return send_file(
+            current_app.config['DICOM_ARCHIVE_FOLDER']+filename, 
+            as_attachment=True)
+    else:
         # Use nginx for the heavy lifting on the prod setup
         r = make_response()
         r.headers['Content-Disposition'] = "attachment"
         r.headers['X-Accel-Redirect'] = "/dicom/" + filename
         return r
-    else:
-        print "Ready to send file"
-        return send_file(
-            current_app.config['DICOM_ARCHIVE_FOLDER']+filename, 
-            as_attachment=True)
 
-def file_ready(filename):
-    if not os.path.exists(current_app.config['DICOM_ARCHIVE_FOLDER']+filename):
-        abort(404)
-    if not os.stat(current_app.config['DICOM_ARCHIVE_FOLDER']+filename)[6]:
-        abort(404)
-    return render_template("processing.html", url=url_for(
-                'download', filename=filename))
+
+
 

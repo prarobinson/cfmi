@@ -61,8 +61,6 @@ def mainloop():
             time.sleep(1)
             continue
         email, subject, paths, exten = pickle.loads(message)
-        call(['touch', "{0}{1}.{2}".format(DICOM_ARCHIVE_FOLDER, 
-                                      subject, exten)])
         pool.apply_async(builder, args=[message])
         socket.send(pickle.dumps(True))
     pool.terminate()
