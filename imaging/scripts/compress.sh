@@ -1,11 +1,11 @@
 #!/bin/bash
 
 args=("$@")
-PATHS=${args[@]:3}
 SUBJECT=$1
 FILENAME=$3/$1.$2
 EXTEN=$2
 TMPDIR=`mktemp -d`
+PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT}`
 
 cd $TMPDIR;
 mkdir $SUBJECT
@@ -24,7 +24,7 @@ else
 	    continue
 	fi
 	datestring=`echo ${path} | awk -F"/" '{print $8 $9 $10}'`
-	if [ $datestring != $dscache ]; then
+	if [ $datestring -ne $dscache ]; then
 	    index=1
 	    dscache=$datestring
 	fi
@@ -50,5 +50,6 @@ fi
 if [ $EXTEN == "zip" ]; then
     zip -r $FILENAME.part .
 fi
-mv $FILENAME.part $FILENAME
+# Don't clobber in the rare case another worker has already finished
+mv -n $FILENAME.part $FILENAME
 rm -rf $TMPDIR

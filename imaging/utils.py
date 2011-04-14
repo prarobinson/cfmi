@@ -10,6 +10,7 @@ from flask import (Module, render_template, abort, request, g, url_for,
 from cfmi.common.database.dicom import Series, Subject 
 
 def make_archive(filename):
+    path = current_app.config['DICOM_ARCHIVE_FOLDER']+filename
     subject = filename.split(".")[0]
     exten = ".".join(filename.split(".")[1:])
     valid_formats = ['tar', 'tar.gz', 'zip','tar.xz', 
@@ -22,9 +23,8 @@ def make_archive(filename):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
-    socket.send(
-        pickle.dumps((g.user.email, subject, [x.get_path() for x in r], 
-                      exten)))
+    socket.send(pickle.dumps((g.user.email, subject, exten)))
+    os.mknod(path+'.part')
 
 def find_series_or_404(subject):
     """ find_series_or_404

@@ -38,9 +38,9 @@ def notify(email, subject, exten):
     s.quit()
 
 def builder(message):
-    email, subject, paths, exten = pickle.loads(message)
+    email, subject, exten = pickle.loads(message)
     call([SCRIPT_PATH+"compress.sh", subject, exten, 
-          DICOM_ARCHIVE_FOLDER]+paths)
+          DICOM_ARCHIVE_FOLDER])
     notify(email, subject, exten)
     return
 
@@ -60,7 +60,7 @@ def mainloop():
         except zmq.ZMQError:
             time.sleep(1)
             continue
-        email, subject, paths, exten = pickle.loads(message)
+        email, subject, exten = pickle.loads(message)
         pool.apply_async(builder, args=[message])
         socket.send(pickle.dumps(True))
     pool.terminate()
