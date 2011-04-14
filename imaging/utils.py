@@ -23,8 +23,8 @@ def make_archive(filename):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
-    socket.send(pickle.dumps((g.user.email, subject, exten)))
     os.mknod(path+'.part')
+    socket.send(pickle.dumps((g.user.email, subject, exten)))
 
 def find_series_or_404(subject):
     """ find_series_or_404

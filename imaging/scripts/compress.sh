@@ -18,19 +18,26 @@ else
     index=1
     dscache=""
     for path in $PATHS; do
-	firstfile=`ls ${path}/1.ACQ/ | head -1`
-	rootname=`strings ${path}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
-	if [ ! $rootname ]; then
+	if [ -d ${path}/1.ACQ/ ]; then
+	    firstfile=`ls ${path}/1.ACQ/ | head -1`
+	    rootname=`strings ${path}/1.ACQ/${firstfile} | grep tProtocolName | grep '"".*""' | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
+	else
+	    firstfile=`ls ${path}/5.ACQ/ | head -1`
+	    rootname=`strings ${path}/5.ACQ/${firstfile} | grep tProtocolName | grep '"".*""' | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
+	fi
+	if [ -z "$rootname" ]; then
 	    continue
 	fi
 	datestring=`echo ${path} | awk -F"/" '{print $8 $9 $10}'`
-	if [ $datestring -ne $dscache ]; then
+	if [ "$datestring" != "$dscache" ]; then
 	    index=1
 	    dscache=$datestring
 	fi
 	nameNdate="${rootname}_${datestring}"
-	ln -s ${path} ${nameNdate}_${index}
-	index=$(($index+1))
+	if [ -n "$rootname" ]; then
+	    ln -s ${path} "${nameNdate}_${index}"
+	    index=$(($index+1))
+	fi
     done
     cd $TMPDIR
 fi

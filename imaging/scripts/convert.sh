@@ -65,16 +65,15 @@ else
   if [ ! -e ${outdir}${subjid} ]; then
     mkdir ${outdir}${subjid}
   fi 
-  if [ ! -e /tmp/${subjid} ]; then
-    mkdir /tmp/${subjid}
-  fi
   for imgpath in ${paths[*]}; do
     if [ -d ${imgpath}/1.ACQ/ ]; then
       firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
-      rootname=`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+      names=(`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`)
+      rootname=${names[${#names[*]}-1]}
     else
       firstfile=`ls ${imgpath}/5.ACQ/ | head -1`
-	  rootname=`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'"' '{print $3}' | sed 's/ /_/g' | sed 's/+/_/g'`
+	  names=(`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`)
+      rootname=${names[${#names[*]}-1]}
 	fi
     imgfiles=(${imgfiles[*]} ${firstfile})
     datestring=`echo ${imgpath} | awk -F"/" '{print $8 $9 $10}'`
@@ -161,14 +160,14 @@ else
           files=(`ls ${paths[${pdt2}]}/1.ACQ/`) 
           counter=0
           for file in ${files[*]}; do 
-            ln -s ${paths[${pdt2}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+            ln -s ${paths[${pdt2}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
             counter=$((${counter} + 1))
           done
-          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
           #mri_convert ${paths[${t1}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${t1}]}_${ord}.nii${gzflag} 
-          mv /tmp/${subjid}/o0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
-          mv /tmp/${subjid}/o1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
-          rm /tmp/${subjid}/* 
+          mv ${tmpdir}/o0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+          mv ${tmpdir}/o1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+          rm ${tmpdir}/* 
         done
     ;;
     esac
@@ -183,21 +182,21 @@ else
       files=(`ls ${paths[${j}]}/1.ACQ/`) 
       counter=0
       for file in ${files[*]}; do 
-        ln -s ${paths[${j}]}/1.ACQ/${file} /tmp/${subjid}/${counter}.IMA
+        ln -s ${paths[${j}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
         counter=$((${counter} + 1))
       done
-      dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} /tmp/${subjid}/0.IMA
+      dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
       #mri_convert ${paths[${j}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag} 
-      niis=(`ls /tmp/${subjid}/ | grep '^[0-9]*.nii'`)
-      orient=`ls /tmp/${subjid}/ | grep '^o'`
+      niis=(`ls ${tmpdir}/ | grep '^[0-9]*.nii'`)
+      orient=`ls ${tmpdir}/ | grep '^o'`
       if [ ${#niis[*]} == 1 ]; then
-        mv -v /tmp/${subjid}/${niis[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag}
-        #mv -v /tmp/${subjid}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
+        mv -v ${tmpdir}/${niis[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag}
+        #mv -v ${tmpdir}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
       else
         is_field=`echo ${imgnames[$j]} | grep field`
         if [ "${is_field}" != "" ]; then
           type=`strings ${paths[$j]}/1.ACQ/${files[0]} | grep ORIGINAL | awk -F'\' '{print $3}'`
-          mv -v /tmp/${subjid}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo1_${ord}.nii${gzflag}
+          mv -v ${tmpdir}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo1_${ord}.nii${gzflag}
           mv -v ${tmpdir}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo2_${ord}.nii${gzflag}
         fi
       fi   
@@ -253,12 +252,21 @@ else
       else
         ord=1
       fi
-      files=(`ls ${paths[${l}]}/1.ACQ/`) 
-      counter=0
-      for file in ${files[*]}; do 
-        ln -s ${paths[${l}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
-        counter=$((${counter} + 1))
-      done
+      if [ -d ${paths[$l]}/1.ACQ/ ]; then
+        files=(`ls ${paths[${l}]}/1.ACQ/`) 
+        counter=0
+        for file in ${files[*]}; do 
+          ln -s ${paths[${l}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
+          counter=$((${counter} + 1))
+        done
+      else
+        files=(`ls ${paths[${l}]}/5.ACQ/`)
+        counter=0
+        for file in ${files[*]}; do 
+          ln -s ${paths[${l}]}/5.ACQ/${file} ${tmpdir}/${counter}.IMA
+          counter=$((${counter} + 1))
+        done
+      fi
       dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
       #mri_convert ${paths[${l}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} 
       niis=(`ls ${tmpdir}/ | grep '^[0-9]*.nii'`)
