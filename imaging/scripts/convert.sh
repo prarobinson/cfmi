@@ -223,15 +223,15 @@ else
           done
           if [ -e ${tmpdir}/1.ACQ.IMA ]; then
             dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/1.ACQ.IMA
-            #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-            mv -v ${tmpdir}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+            mv -v ${tmpdir}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
             if [ -e  ${tmpdir}/1ACQ.bvec ]; then
-              mv -v ${tmpdir}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
-              mv -v ${tmpdir}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
+              mv -v ${tmpdir}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bvec
+              mv -v ${tmpdir}/1ACQ.bval ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bval
             fi
           else 
             dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/5.ACQ.IMA
-            mv -v ${tmpdir}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+            mv -v ${tmpdir}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
           fi
           rm ${tmpdir}/*
         else
