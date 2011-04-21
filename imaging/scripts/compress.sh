@@ -7,6 +7,8 @@ EXTEN=$2
 TMPDIR=`mktemp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT}`
 
+echo "$@" >> /tmp/wtf.log
+
 cd $TMPDIR;
 mkdir $SUBJECT
 cd $SUBJECT
@@ -20,10 +22,10 @@ else
     for path in $PATHS; do
 	if [ -d ${path}/1.ACQ/ ]; then
 	    firstfile=`ls ${path}/1.ACQ/ | head -1`
-	    rootname=`strings ${path}/1.ACQ/${firstfile} | grep tProtocolName | grep '"".*""' | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
+	    rootname=`strings ${path}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
 	else
 	    firstfile=`ls ${path}/5.ACQ/ | head -1`
-	    rootname=`strings ${path}/5.ACQ/${firstfile} | grep tProtocolName | grep '"".*""' | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
+	    rootname=`strings ${path}/5.ACQ/${firstfile} | grep tProtocolName |  awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`
 	fi
 	if [ -z "$rootname" ]; then
 	    continue
