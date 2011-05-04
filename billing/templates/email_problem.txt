@@ -1,0 +1,15 @@
+{% from "_macros.html" import print_user %}
+Hello,
+
+{{ print_user(g.user) }} has reported a problem with the following session:
+
+https://billing.cfmi.georgetown.edu{{ url_for('frontend.edit_session', session_id=session_id) }}
+
+The session should be billed as {{ duration }} hrs. for the following reason:
+
+{{ problem }}
+
+-- 
+Sincerely,
+
+Friendly CFMI Billing Robot

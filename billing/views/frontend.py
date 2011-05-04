@@ -13,7 +13,7 @@ from cfmi.common.auth.decorators import (superuser_only, login_required,
 
 from cfmi.billing.utils import (
     fiscal_year, total_last_month, limit_month, gchart_ytd_url, active_projects)
-from cfmi.billing.views.api import invoice_send_email
+from cfmi.billing.views.api import invoice_send_email, problem_send_email
 
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm, ProblemRequestForm
@@ -231,5 +231,6 @@ def problem_request(session_id):
     if form.validate_on_submit():
         flash("We've received your report, you'll be notified of any changes to your invoice", 
               category='success')
+        problem_send_email(session_id, form.problem, form.duration)
         return redirect(url_for("edit_session", session_id=session_id))
     return redirect(url_for('problem', session_id=session_id))

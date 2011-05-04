@@ -111,7 +111,7 @@ def invoice_send_email(invoice_id):
     msg = MIMEText(render_template('email.txt', invoice=invoice))
     msg['Subject'] = "CFMI Invoice: {0}".format(invoice.date.strftime("%b %Y"))
     msg['From'] = 'billing@cfmi.georgetown.edu'
-    msg['Reply-to'] = 'billing@cfmi.georgetown.edu'
+    msg['Reply-to'] = 'cfmiadmin@georgetown.edu'
     msg['To'] = invoice.project.pi.email
     recip = [invoice.project.pi.email, 'sn253@georgetown.edu',
              'cfmiadmin@georgetown.edu']
@@ -127,6 +127,24 @@ def invoice_send_email(invoice_id):
     invoice.sent = True
     db_session.commit()
     return jsonify(flatten(invoice))
+
+def problem_send_email(session_id, problem, duration):
+    scan = Session.query.get(session_id)
+    msg = MIMEText(render_template('email_problem.txt', session_id=session_id,
+                                   problem=problem.data, duration=duration.data))
+    msg['Subject'] = "Session problem report: {0}".format(session_id)
+    msg['From'] = 'billing@cfmi.georgetown.edu'
+    msg['Reply-to'] = g.user.email if g.user.email else scan.project.email
+    msg['To'] = 'cfmiadmin@georgetown.edu'
+    recip = ['sn253@georgetown.edu', 'cfmiadmin@georgetown.edu']
+    if g.user.email:
+        msg['Cc'] = g.user.email
+    #    recip.append(g.user.email)
+    s = smtplib.SMTP()
+    s.connect('localhost')
+    s.sendmail('billing@cfmi.georgetown.edu', recip,
+               msg.as_string())
+    s.quit()
 
 @api.route('/batch/update_stats')
 @superuser_only
