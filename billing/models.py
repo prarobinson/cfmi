@@ -41,7 +41,7 @@ def session_cost(self):
     if self.is_devel():
         return "%.2f" % 0
     quar_rate = float(self.project.mri_rate) / 4
-    return "%.2f" % (round(self.duration() / 900) * quar_rate)
+    return "%.2f" % (round(self.duration() / 900.0) * quar_rate)
 
 def session_duration(self):
     if self.is_corrected():
