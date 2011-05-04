@@ -115,13 +115,13 @@ def invoice_send_email(invoice_id):
     msg['To'] = invoice.project.pi.email
     recip = [invoice.project.pi.email, 'sn253@georgetown.edu',
              'cfmiadmin@georgetown.edu']
-    if invoice.project.email:
-        msg['Cc'] = invoice.project.email
-        recip.append(invoice.project.email)
+    if invoice.project.email and invoice.project.email is not invoice.project.pi.email:
+            msg['Cc'] = invoice.project.email
+            recip.append(invoice.project.email)
     s = smtplib.SMTP()
     s.connect('localhost')
     s.sendmail('billing@cfmi.georgetown.edu',
-               ['sn253@georgetown.edu', 'mk782@georgetown.edu'],
+               recip,
                msg.as_string())
     s.quit()
     invoice.sent = True
@@ -139,7 +139,7 @@ def problem_send_email(session_id, problem, duration):
     recip = ['sn253@georgetown.edu', 'cfmiadmin@georgetown.edu']
     if g.user.email:
         msg['Cc'] = g.user.email
-    #    recip.append(g.user.email)
+        recip.append(g.user.email)
     s = smtplib.SMTP()
     s.connect('localhost')
     s.sendmail('billing@cfmi.georgetown.edu', recip,
