@@ -52,9 +52,10 @@ def session_dur_hours(self):
     return "%.2f" % round(self.duration() / 3600.0, 2)
 
 def session_billing_start(self):
-    if not self.start:
-        self.start = self.sched_start
-    return min([self.sched_start, self.start])
+    #if not self.start:
+    #    self.start = self.sched_start
+    #return min([self.sched_start, self.start])
+    return self.sched_start
 
 def session_billing_end(self):
     if not self.end:
