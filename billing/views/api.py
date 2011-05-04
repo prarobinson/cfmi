@@ -126,7 +126,7 @@ def invoice_send_email(invoice_id):
     s.quit()
     invoice.sent = True
     db_session.commit()
-    return jsonify(flatten(invoice))
+    return model_instance("invoice", invoice_id)
 
 def problem_send_email(session_id, problem, duration):
     scan = Session.query.get(session_id)
@@ -194,6 +194,7 @@ def model_instance(model, id):
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
         db_session.commit()
+        inst = eval(model.capitalize()).query.get(id)
     if not inst:
         abort(404)
     return jsonify(flatten(inst))
