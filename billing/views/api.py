@@ -113,14 +113,19 @@ def invoice_send_email(invoice_id):
     msg['From'] = 'billing@cfmi.georgetown.edu'
     msg['Reply-to'] = 'billing@cfmi.georgetown.edu'
     msg['To'] = invoice.project.pi.email
-    #msg['To'] = 'sn253@georgetown.edu'
+    recip = [invoice.project.pi.email, 'sn253@georgetown.edu',
+             'cfmiadmin@georgetown.edu']
+    if invoice.project.email:
+        msg['Cc'] = invoice.project.email
+        recip.append(invoice.project.email)
     s = smtplib.SMTP()
     s.connect('localhost')
-    s.sendmail('billing@cfmi.georgetown.edu', ['sn253@georgetown.edu'], msg.as_string())
+    s.sendmail('billing@cfmi.georgetown.edu',
+               ['sn253@georgetown.edu', 'mk782@georgetown.edu'],
+               msg.as_string())
     s.quit()
     invoice.sent = True
     db_session.commit()
-    print invoice
     return jsonify(flatten(invoice))
 
 @api.route('/batch/update_stats')
@@ -173,7 +178,6 @@ def model_instance(model, id):
         db_session.commit()
     if not inst:
         abort(404)
-    print inst
     return jsonify(flatten(inst))
 
 @api.route('/user')

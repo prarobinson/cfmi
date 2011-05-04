@@ -34,13 +34,27 @@ Preclinical Sciences Building LM-14
 Washington, DC 20057
 
 {% endif %}
+Please review your invoice for development time and pilot scans and
+note the usage agains your negociated development time.
+
+If you have questions or concerns direct them to
+cfmiadmin@georgetown.edu or call 202-687-3963.
+
 Sincerely,
 
 Friendly CFMI Billing Robot
 
 -- 
+
 You are receiving this e-mail from the Center for Functional and
 Molecular Imaging at Georgetown University Medical Center because you
-are listed as the PI of a project that has accrued billable hours in
-the last month. Please direct any questions or comments to
-billing@cfmi.georgetown.edu or call 202-687-4161
+are listed as the PI or project manager of a project that has accrued
+billable hours in the last month. PI's may change their e-mail address
+at https://cfmi.georgetown.edu/secured/profile.php .
+
+The e-mail address of the project manager can be updated by the
+project's PI by filling out the e-mail field on the update project
+page here: https://cfmi.georgetown.edu/secured/project.php
+
+Please direct any questions or comments to cfmiadmin@georgetown.edu or
+call 202-687-4161
