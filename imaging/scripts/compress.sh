@@ -57,6 +57,7 @@ if [ $EXTEN == "tar.xz" ]; then
     tar -cJhf $FILENAME.part .
 fi
 if [ $EXTEN == "zip" ]; then
+    rm $FILENAME.part
     zip -r $FILENAME.part .
 fi
 # Don't clobber in the rare case another worker has already finished

@@ -12,14 +12,14 @@ from cfmi.common.database.dicom import Series, Subject
 def make_archive(filename):
     path = current_app.config['DICOM_ARCHIVE_FOLDER']+filename
     subject = filename.split(".")[0]
+    r = find_series_or_404(subject)
     exten = ".".join(filename.split(".")[1:])
-    valid_formats = ['tar', 'tar.gz', 'zip','tar.xz', 
-                     'tar.bz2']
+    valid_formats = ['tar', 'zip', 'tar.bz2']
     valid_formats += [".".join(["nii", format]) for format in valid_formats]
     # Default to raw+bz2 if we have an out of spec extension
-    exten = exten if exten in valid_formats else "tar.bz2"
+    exten = exten if exten in valid_formats else None
+    if not exten: abort(403)
     filename = "{0}.{1}".format(subject, exten)
-    r = find_series_or_404(subject)
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
