@@ -9,8 +9,6 @@ TMPDIR=`mktemp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT}`
 TEMPLATE=$HOME/cfmi/imaging/templates/email.tpl
 
-echo "$@" >> /tmp/wtf.log
-
 cd $TMPDIR;
 mkdir $SUBJECT
 cd $SUBJECT
