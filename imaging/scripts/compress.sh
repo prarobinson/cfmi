@@ -4,8 +4,10 @@ args=("$@")
 SUBJECT=$1
 FILENAME=$3/$1.$2
 EXTEN=$2
+EMAIL=$4
 TMPDIR=`mktemp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT}`
+TEMPLATE=$HOME/devel/cfmi/cfmi/imaging/templates/email.tpl
 
 echo "$@" >> /tmp/wtf.log
 
@@ -63,3 +65,7 @@ fi
 # Don't clobber in the rare case another worker has already finished
 mv -n $FILENAME.part $FILENAME
 rm -rf $TMPDIR
+
+sed -e "s/{{ subject }}/$SUBJECT/" $TEMPLATE | \
+    sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${SUBJECT}.${EXTEN}," | \
+    mail -s "File is ready" -r imaging@cfmi.georgetown.edu $EMAIL

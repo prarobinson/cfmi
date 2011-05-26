@@ -32,7 +32,6 @@ def download(filename):
 def sendfile(filename):
     if current_app.config["DEBUG"]:
         # Use flask during development
-        print "trying to sendfile"
         return flask_send_file(get_archive_path(filename),
                                as_attachment=True)
     else:

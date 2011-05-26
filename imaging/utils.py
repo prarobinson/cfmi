@@ -25,7 +25,7 @@ def make_archive(filename):
     filename = "{0}.{1}".format(subject, exten)
     os.mknod(lockpath, 0660)
     Popen(["compress.sh", subject, exten,
-          current_app.config['DICOM_ARCHIVE_FOLDER']])
+          current_app.config['DICOM_ARCHIVE_FOLDER'], g.user.email])
     return True
 
 def get_archive_path(filename):
