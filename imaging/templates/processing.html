@@ -10,11 +10,13 @@ function checker() {
             window.location.href = '{{ url }}';
         }).error(
         function () {
-            setTimeout(checker, 5000);
+            setTimeout(checker, 30000);
         });
 }
 
-$(document).ready(checker)
+$(document).ready(function () {
+    setTimeout(checker, 30000);
+});
 
 //-->
 </script>
@@ -25,17 +27,16 @@ $(document).ready(checker)
   <div class="contentbox">
     <h1>We're processing your files.</h1>
     <div class="subcontent">
-      <p>This could take some time. You will be notified by e-mail when this processing is complete and
-      your file is ready for download. </p>
+      <p>This could take some time.</p>
 
-      <p>The email address we have on file for you is: 
+      <!-- <p>The email address we have on file for you is: 
         <em>{{ g.user.email }}</em> .<br /> If this is incorrect please
         update it
         <a href="http://cfmi.georgetown.edu/secured/profile.php">here</a>.</p>
-      
-    <p>If choose to stick around, this page will redirect you to the file
-      when it is available. The file will eventually be available for
-      download <a href="{{ url }}">here</a></p>
+      -->
+    <p>Leave this page open, it will redirect you to the file when it
+      is available. If you want to come back later, your file will
+      eventually be available for download <a href="{{ url }}">here</a></p>
     </div>
   </div>
 </div>

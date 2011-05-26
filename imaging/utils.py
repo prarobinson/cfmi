@@ -1,8 +1,8 @@
 import os
 import pickle
-import zmq
 from datetime import timedelta, date
-from subprocess import call
+from os.path import exists
+from subprocess import Popen
 
 from flask import (Module, render_template, abort, request, g, url_for,
                    current_app)
@@ -10,7 +10,10 @@ from flask import (Module, render_template, abort, request, g, url_for,
 from cfmi.common.database.dicom import Series, Subject 
 
 def make_archive(filename):
-    path = current_app.config['DICOM_ARCHIVE_FOLDER']+filename
+    path = get_archive_path(filename)
+    lockpath = path+".part"
+    if exists(lockpath):
+        return False
     subject = filename.split(".")[0]
     r = find_series_or_404(subject)
     exten = ".".join(filename.split(".")[1:])
@@ -20,11 +23,13 @@ def make_archive(filename):
     exten = exten if exten in valid_formats else None
     if not exten: abort(403)
     filename = "{0}.{1}".format(subject, exten)
-    context = zmq.Context()
-    socket = context.socket(zmq.REQ)
-    socket.connect("tcp://localhost:5555")
-    os.mknod(path+'.part', 0660)
-    socket.send(pickle.dumps((g.user.email, subject, exten)))
+    os.mknod(lockpath, 0660)
+    Popen(["compress.sh", subject, exten,
+          current_app.config['DICOM_ARCHIVE_FOLDER']])
+    return True
+
+def get_archive_path(filename):
+    return current_app.config['DICOM_ARCHIVE_FOLDER']+filename
 
 def find_series_or_404(subject):
     """ find_series_or_404
@@ -51,12 +56,3 @@ def find_series_or_404(subject):
         top = bot + oneday
         r = r.filter(Series.date<top).filter(Series.date>bot)
     return r
-
-def file_ready(filename):
-    path = current_app.config['DICOM_ARCHIVE_FOLDER']+filename
-    tmpfile = path+'.part'
-    if os.path.exists(path):
-        return True
-    if not os.path.exists(tmpfile):
-        make_archive(filename)
-    return False
