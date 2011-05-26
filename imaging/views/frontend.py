@@ -37,6 +37,7 @@ def sendfile(filename):
     else:
         # Use nginx for the heavy lifting on the prod setup
         r = make_response()
+        r.headers['Content-Type']=""
         r.headers['Content-Disposition'] = "attachment"
         r.headers['X-Accel-Redirect'] = "/dicom/" + filename
         return r
