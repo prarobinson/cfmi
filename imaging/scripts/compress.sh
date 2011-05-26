@@ -68,4 +68,4 @@ rm -rf $TMPDIR
 
 sed -e "s/{{ subject }}/$SUBJECT/" $TEMPLATE | \
     sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${SUBJECT}.${EXTEN}," | \
-    mail -s "File is ready" -r imaging@cfmi.georgetown.edu $EMAIL
+    mail -s "[CFMI Imaging] ${SUBJECT}.${EXTEN} is ready" -r imaging@cfmi.georgetown.edu $EMAIL
