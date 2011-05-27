@@ -68,11 +68,11 @@ else
   for imgpath in ${paths[*]}; do
     if [ -d ${imgpath}/1.ACQ/ ]; then
       firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
-      names=(`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`)
+      names=(`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g'`)
       rootname=${names[${#names[*]}-1]}
     else
       firstfile=`ls ${imgpath}/5.ACQ/ | head -1`
-	  names=(`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g'`)
+	  names=(`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g'`)
       rootname=${names[${#names[*]}-1]}
 	fi
     imgfiles=(${imgfiles[*]} ${firstfile})
