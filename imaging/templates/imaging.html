@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('imaging.static', filename="css/style.css") }}?v=2">
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('imaging.static', filename='js/script.js') }}"></script>
+{% endblock %}

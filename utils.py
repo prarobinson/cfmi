@@ -4,10 +4,10 @@ from datetime import timedelta, date
 from os.path import exists
 from subprocess import Popen
 
-from flask import (Module, render_template, abort, request, g, url_for,
+from flask import (render_template, abort, request, g, url_for,
                    current_app)
 
-from cfmi.common.database.dicom import Series, Subject 
+from cfmi.database.dicom import Series, DicomSubject 
 
 def make_archive(filename):
     path = get_archive_path(filename)
@@ -42,8 +42,8 @@ def find_series_or_404(subject):
     are filtered out
     
     """
-    r = Series.query.join(Subject).filter(
-        Subject.name==subject)
+    r = Series.query.join(DicomSubject).filter(
+        DicomSubject.name==subject)
     if not r.all():
         abort(404)
     if 'program' in request.args:

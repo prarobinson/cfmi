@@ -1,14 +1,14 @@
-from flask import (Module, jsonify, abort) 
+from flask import (Blueprint, jsonify, abort) 
 
-from cfmi.common.auth.decorators import (
-        login_required, authorized_users_only)
-from cfmi.common.database.dicom import (Series, Subject as DicomSubject)
-from cfmi.common.database.newsite import Project
+from cfmi.auth import (
+    login_required, authorized_users_only)
+from cfmi.database.dicom import (Series, DicomSubject)
+from cfmi.database.newsite import Project 
 
-from cfmi.imaging.utils import find_series_or_404
+from cfmi.utils import find_series_or_404
 
-
-api = Module(__name__)
+api = Blueprint('imaging_api', __name__, static_folder='static',
+                template_folder='templates')
 
 @api.route('/path/<subject>')
 def get_path(subject):

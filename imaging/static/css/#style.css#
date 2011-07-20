@@ -1,0 +1,38 @@
+
+
+/* Specfic to Imaging app */
+
+.subcontent {
+    max-height: 640px;
+    overflow: auto;
+}
+
+#subject_detail .subcontent {
+    max-height:525px;
+}
+
+#subject_container li,span {
+    font-size: 12px;
+    font-style: italic;
+}
+
+form li { 
+    list-style-type:none; 
+}
+
+#login_box label {
+    float: left;
+    text-align: right;
+    margin-right: 25px;
+    width: 150px;
+    padding-top:10px;
+}
+
+#login_box input[type="submit"] {
+    margin-left: 175px;
+    margin-top:0;
+}
+
+#subject_detail input {
+    margin-left:5px;
+}

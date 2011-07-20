@@ -1,19 +1,19 @@
 from os.path import exists
-from flask import (send_file as flask_send_file, render_template, url_for, abort, 
-                   make_response, Module, current_app, request)
+from flask import (Blueprint, send_file as flask_send_file, render_template,
+                   url_for, abort, make_response, Module, current_app,
+                   request)
 
-from cfmi.common.auth.decorators import (login_required,
-                                         authorized_users_only)
+from cfmi.auth import (login_required, authorized_users_only)
+from cfmi.utils import (make_archive, find_series_or_404, get_archive_path)
 
-from cfmi.imaging.utils import make_archive, find_series_or_404, get_archive_path
-
-frontend = Module(__name__)
+frontend = Blueprint('imaging', __name__, static_folder="../static",
+                     template_folder='../templates')
 
 # Views
 @frontend.route('/')
 @login_required
 def index():
-    return render_template("layout.html") 
+    return render_template("imaging.html") 
 
 @frontend.route('/download/<filename>', methods=['GET','HEAD'])
 @authorized_users_only
@@ -41,7 +41,3 @@ def sendfile(filename):
         r.headers['Content-Disposition'] = "attachment"
         r.headers['X-Accel-Redirect'] = "/dicom/" + filename
         return r
-
-
-
-

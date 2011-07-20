@@ -19,19 +19,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Place favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
-  <link rel="shortcut icon" href="/static/favicon.ico">
-  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-
+  <link rel="shortcut icon" href="{{ url_for('static', filename="favicon.ico") }}">
 
   <!-- CSS: implied media="all" -->
-  <link rel="stylesheet" href="/static/css/style.css?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename="css/style.css") }}?v=2">
+  {% block header %}
+  {% endblock %}
   <link href='https://fonts.googleapis.com/css?family=Cardo' rel='stylesheet' type='text/css'>
 
   <!-- Uncomment if you are specifically targeting less enabled mobile browsers
   <link rel="stylesheet" media="handheld" href="css/handheld.css?v=2">  -->
 
   <!-- All JavaScript at the bottom, except for Modernizr which enables HTML5 elements & feature detects -->
-  <script src="/static/js/libs/modernizr-1.7.min.js"></script>
+  <script src="{{ url_for('static', filename="js/libs/modernizr-1.7.min.js") }}"></script>
 
 </head>
 
@@ -40,13 +40,13 @@
   <div id="container" class="container">
     <header>
       <h1>Imaging</h1>
-      <img src="/static/titlebar.png" />
+      <img src="{{ url_for('static', filename="titlebar.png") }}" />
       <div id="nav" class="span-24 last">
         <a id="browse" href="/">Browse</a>
         <a id="stats" href="http://cfmi.georgetown.edu/">Home</a>
         <a id="reconcile" href="https://cfmi.georgetown.edu/secured/">Scheduling</a>
         <a id="batch" href="https://billing.cfmi.georgetown.edu/">Billing</a>
-        <a id="home" href="/logout">Logout</a>
+        <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
       </div> <!-- -End of #nav -->
     </header>
     <div id="main" role="main">
@@ -105,8 +105,8 @@
   <script>window.jQuery || document.write("<script src='/static/js/libs/jquery-ui.min.js'>\x3C/script>")</script>
 
   <!-- scripts concatenated and minified via ant build script-->
-  <script src="/static/js/plugins.js"></script>
-  <script src="/static/js/script.js"></script>
+  <script src="{{ url_for('static', filename="js/plugins.js") }}"></script>
+  <script src="{{ url_for('static', filename="js/script.js") }}"></script>
   {% with messages = get_flashed_messages() %}
   <script type="text/javascript">
     {% for category, msg in get_flashed_messages(with_categories=true) %}
