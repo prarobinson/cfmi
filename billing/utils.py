@@ -1,7 +1,7 @@
 from calendar import monthrange
 from datetime import date, timedelta
 
-from cfmi.billing.settings import cache
+from cfmi import cache
 from cfmi.billing.models import User, Session, Project, Invoice, Problem
 
 ## Business logic that doesn't need to crowd up the views

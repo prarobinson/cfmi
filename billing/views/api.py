@@ -5,18 +5,19 @@ from datetime import datetime, date
 from decimal import Decimal
 from email.mime.text import MIMEText
 
-from flask import (
-    render_template, request, session, g, redirect, url_for, abort, 
-    flash, send_file, escape, jsonify, current_app, Module)
+from flask import (render_template, request, session, g, redirect, url_for,
+                   abort, flash, send_file, escape, jsonify, current_app,
+                   Blueprint)
 
-from cfmi.billing.models import User, Project, Session, Invoice, Problem, db_session
-from cfmi.common.auth.decorators import (superuser_only, login_required,
-                                         authorized_users_only)
+from cfmi.billing.models import User, Project, Session, Invoice, Problem
+from cfmi.auth import (superuser_only, login_required,
+                       authorized_users_only)
 
 from cfmi.billing.utils import limit_month, active_projects
-from cfmi.billing.settings import cache
+from cfmi import cache
 
-api = Module(__name__)
+api = Blueprint('billing_api', __name__, static_folder='../static',
+                template_folder='../templates')
 
 ## Flask Hooks
 @api.before_request

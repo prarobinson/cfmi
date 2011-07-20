@@ -3,8 +3,8 @@ from datetime import date, timedelta
 
 from flask import render_template
 
-from cfmi.common.database import newsite
-from cfmi.billing.settings import cache
+from cfmi.database import newsite
+from cfmi import cache
 
 # Methods to support objects in a billing context
 
@@ -123,8 +123,3 @@ Invoice.total = invoice_total
 
 Subject = newsite.Subject
 
-db_session = newsite.db_session
-
-Base = newsite.Base
-
-engine = newsite.engine

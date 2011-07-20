@@ -1,15 +1,15 @@
 from datetime import timedelta, date
 from subprocess import call
 
-from flask import (
-    render_template, request, session, g, redirect, url_for, abort, 
-    flash, send_file, escape, current_app, Module)
+from flask import (Blueprint, render_template, request, session, g,
+                   redirect, url_for, abort, flash, send_file, escape,
+                   current_app)
 
-from cfmi.billing.settings import cache
+from cfmi import cache
 from cfmi.billing.models import (User, Project, Session, Problem, Invoice, 
-                                 Subject, db_session)
-from cfmi.common.auth.decorators import (superuser_only, login_required,
-                                         authorized_users_only)
+                                 Subject)
+from cfmi.auth import (superuser_only, login_required,
+                       authorized_users_only)
 
 from cfmi.billing.utils import (
     fiscal_year, total_last_month, limit_month, gchart_ytd_url, active_projects)
@@ -18,7 +18,8 @@ from cfmi.billing.views.api import invoice_send_email, problem_send_email
 from formalchemy import FieldSet
 from cfmi.billing.forms import ROSessionForm, SessionForm, ProblemForm, ProblemRequestForm
 
-frontend = Module(__name__)
+frontend = Blueprint('billing', __name__, static_folder='../static',
+                     template_folder='../templates')
 
 ## Views
 

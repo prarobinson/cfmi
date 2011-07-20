@@ -1,13 +1,17 @@
 Quick Start:
 
-git clone http://github.com/nocko/cfmi.git
 virutalenv cfmi
 cd cfmi
+. bin/activate
+git clone http://github.com/nocko/cfmi.git
+cd cfmi
 source ./bin/activate
-find . -name requirements.txt -exec pip install -r {} \;
+pip install -r requirements.txt
 
+Copy setings.py.dist to settings.py and edit it to your needs
 
-Development servers can be started by typing:
- python <project_dir>
+A development server can be started by running python cfmi in the
+virutalenv directory
+
 
 Happy Hacking
