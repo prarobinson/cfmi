@@ -39,8 +39,9 @@
 
   <div id="container" class="container">
     <header>
-      <h1>Imaging</h1>
+      <h1>{% block name %}CFMI{% endblock %}</h1>
       <img src="{{ url_for('static', filename="titlebar.png") }}" />
+      {% block nav %}
       <div id="nav" class="span-24 last">
         <a id="browse" href="/">Browse</a>
         <a id="stats" href="http://cfmi.georgetown.edu/">Home</a>
@@ -48,46 +49,11 @@
         <a id="batch" href="https://billing.cfmi.georgetown.edu/">Billing</a>
         <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
       </div> <!-- -End of #nav -->
+      {% endblock %}
     </header>
     <div id="main" role="main">
       <div id="messages"></div>
       {% block content %}
-      <div class="span-12">
-        <div id="projects" class="contentbox">
-          <h1>Projects</h1>
-          <div class="subcontent">
-            <dl>
-              {% for project in g.user.get_projects() %}
-              <dt><a href="javascript:void true;">{{ project.shortname() }}</a></dt>
-              <dd>
-                <div id="project_{{ project.id }}">
-                  <ul>
-                  </ul>
-                </div>
-              </dd>
-              {% endfor %}
-            </dl>
-          </div>
-        </div>
-      </div>
-      <div id="subject_container" class="span-12 last">
-        <div id="series_detail" class="contentbox">
-          <h1>Series Detail</h1>
-          <div class="subcontent">
-            <p>Date: <span id="date"></span></p>
-            <p>Program: <span id="program"></span></p>
-          </div>
-        </div>
-        <div id="subject_detail" class="contentbox">
-          <h1>Subject Detail</h1>
-          <div class="subcontent">
-            <p>Name: <span id="subject_name"></span></p>
-            <p><span id="subject_download"></span></p>
-            <div id="subject_series">
-            </div>
-          </div>
-        </div>
-      </div>
       {% endblock %}
     </div> <!-- end of #main -->
     <footer>

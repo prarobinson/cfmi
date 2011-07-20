@@ -1,9 +1,9 @@
-from flask import (Blueprint, jsonify, abort) 
+from flask import (Blueprint, jsonify, abort, request) 
 
 from cfmi.auth import (
-    login_required, authorized_users_only)
+    login_required, authorized_users_only, superuser_only)
 from cfmi.database.dicom import (Series, DicomSubject)
-from cfmi.database.newsite import Project 
+from cfmi.database.newsite import Project, User, Subject 
 
 from cfmi.utils import find_series_or_404
 
@@ -66,3 +66,5 @@ def series(series_id):
     date = ser.date.strftime("%m/%d/%Y %H:%M")
     return jsonify(program=ser.program_name, id=ser.id, 
                    date=date, subject=ser.subject.name)
+
+

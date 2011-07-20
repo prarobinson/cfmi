@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block name %}Billing{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('billing.static', filename="css/style.css") }}?v=2">
+{% endblock %}
+
+{% block nav %}
+{% if g.user and g.user.is_superuser() %}
+<div id="nav" class="span-24 last">
+  <a id="browse" href="{{ url_for('billing.index') }}">Browse</a>
+  <a id="reconcile" href="{{ url_for('billing.reconcile') }}">Reconcile</a>
+  <a id="stats" href="{{ url_for('billing.statistics') }}">Statistics</a>
+  <a id="batch" href="{{ url_for('billing.batch') }}">Batch</a>
+  <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
+</div> <!-- -End of #nav -->
+{% else %}
+<div id="nav" class="span-24 last">
+  <a id="browse" href="{{ url_for('billing.user_portal') }}">Portal</a>
+  <a id="reconcile" href=""></a>
+  <a id="stats" href="{{ url_for('billing.statistics') }}">Statistics</a>
+  <a id="batch" href="/batch"></a>
+  {% if not g.user %}
+  <a id="home" href="http://cfmi.georgetown.edu/">Home</a>
+  {% else %}
+  <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
+  {% endif %}
+</div> <!-- end of alternate #nav -->
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div id="browser" class="accordion">
+  <h3>Date</h3>
+  <p>Date: <input type="text" id="datepicker"></p>
+  <h3>PI</h3>
+  <div id="pi_selector">
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('billing.static', filename='js/script.js') }}"></script>
+{% endblock %}

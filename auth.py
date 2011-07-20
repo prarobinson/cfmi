@@ -28,13 +28,13 @@ def login():
     if 'next' in request.args:
         return redirect(request.args['next'])
     else:
-        return redirect(url_for('index'))
+        return redirect('/')
 
 @auth.route('/logout/')
 def logout():
     session.pop('user_id', None)
     flash("You have been logged out", category='info')
-    return redirect(url_for('index'))
+    return redirect('/')
 
 def authorized_users_only(f):
     """ 

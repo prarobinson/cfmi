@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "billing.html" %}
 
 {% block title %}
 {{ scan.subject.name }}: {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }}
@@ -13,11 +13,11 @@
   </span>
   Duration: {{ scan.dur_hours() }} hrs.{% if scan.is_corrected() %}
   <span id="billing_correction">(Billing corrected from {{ scan.dur_actual() }} hrs.: {{ scan.billing_comment() }}
-  [<a id="prob_link" href="{{ url_for('del_problem', session_id=scan.id) }}#{{ scan.problem.id }}">delete</a>]
-  [<a href="{{ url_for('problem', session_id=scan.id) }}">edit</a>])
+  [<a id="prob_link" href="{{ url_for('billing.del_problem', session_id=scan.id) }}#{{ scan.problem.id }}">delete</a>]
+  [<a href="{{ url_for('billing.problem', session_id=scan.id) }}">edit</a>])
   </span>
   {% else %}
-  [<a href="{{ url_for('problem', session_id=scan.id) }}">change duration</a>]
+  [<a href="{{ url_for('billing.problem', session_id=scan.id) }}">change duration</a>]
   {% endif %}
   <hr />
   <form id="session_form" action="" method="post">
@@ -26,7 +26,7 @@
     <div id="correction">
       Scan duration corrected to {{ scan.dur_hours() }} hrs. due to
       reported problem: {{ scan.billing_comment() }}
-      [<a href="{{ url_for('del_problem', session_id=scan.id) }}">delete</a>]
+      [<a href="{{ url_for('billing.del_problem', session_id=scan.id) }}">delete</a>]
     </div>
     {% endif %}
     <div><input type="submit" value="Submit Changes" /></div>

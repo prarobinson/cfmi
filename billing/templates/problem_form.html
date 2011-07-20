@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "billing.html" %}
 
 {% block title %}
 Problem Report - {{ scan.subject.name }}: 
@@ -10,7 +10,7 @@ Problem Report - {{ scan.subject.name }}:
   <h1>Problem Report: {{ scan }}</h1>
   <em>{{ scan.project }} - {{ scan.subject }}</em>
   <span class="return-link">
-    <a href="{{ url_for('edit_session', session_id=scan.id) }}">
+    <a href="{{ url_for('billing.edit_session', session_id=scan.id) }}">
       Return to session</a>
   </span>
   <hr />

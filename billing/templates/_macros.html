@@ -49,7 +49,7 @@
 {%- endmacro %}
 
 {% macro render_session(scan) -%}
-<a href="{{ url_for('edit_session', session_id=scan.id) }}">
+<a href="{{ url_for('billing.edit_session', session_id=scan.id) }}">
   {{ scan.sched_start.strftime("%m/%d/%Y %H:%M") }} - 
   {{ scan.sched_end.strftime("%H:%M") }}
 </a>

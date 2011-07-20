@@ -1,6 +1,6 @@
 import os
 import pickle
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from os.path import exists
 from subprocess import Popen
 
@@ -8,6 +8,7 @@ from flask import (render_template, abort, request, g, url_for,
                    current_app)
 
 from cfmi.database.dicom import Series, DicomSubject 
+from cfmi.database.newsite import (User, Project, Session, Invoice, Problem)
 
 def make_archive(filename):
     path = get_archive_path(filename)
@@ -56,3 +57,4 @@ def find_series_or_404(subject):
         top = bot + oneday
         r = r.filter(Series.date<top).filter(Series.date>bot)
     return r
+

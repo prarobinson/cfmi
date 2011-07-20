@@ -5,7 +5,7 @@ from flask import (Blueprint, render_template, request, session, g,
                    redirect, url_for, abort, flash, send_file, escape,
                    current_app)
 
-from cfmi import cache
+from cfmi import cache, db
 from cfmi.billing.models import (User, Project, Session, Problem, Invoice, 
                                  Subject)
 from cfmi.auth import (superuser_only, login_required,
@@ -27,8 +27,8 @@ frontend = Blueprint('billing', __name__, static_folder='../static',
 @login_required
 def index():
     if not g.user.is_superuser():
-        return redirect(url_for("user_portal"))
-    return render_template('index.html')
+        return redirect(url_for("billing.user_portal"))
+    return render_template('billing.html')
 
 @frontend.route('/user/')
 @login_required
@@ -63,9 +63,9 @@ def invoice_delete(id):
     inv = Invoice.query.get(id)
     if not inv:
         abort(404)
-    db_session.delete(inv)
-    db_session.commit()
-    return redirect(url_for('reconcile'))
+    db.session.delete(inv)
+    db.session.commit()
+    return redirect(url_for('billing.reconcile'))
 
 @frontend.route('/invoice/<int:id>/paid')
 @superuser_only
@@ -74,8 +74,8 @@ def invoice_paid(id):
     if not inv:
         abort(404)
     inv.reconciled = True
-    db_session.commit()
-    return redirect(url_for('reconcile'))
+    db.session.commit()
+    return redirect(url_for('billing.reconcile'))
 
 @frontend.route('/invoice/<int:invoice_id>/notify')
 @superuser_only
@@ -84,7 +84,7 @@ def invoice_notify(invoice_id):
     if not inv:
         abort(404)
     invoice_send_email(invoice_id)
-    return redirect(url_for('reconcile'))
+    return redirect(url_for('billing.reconcile'))
 
 @frontend.route('/stats/')
 @login_required
@@ -162,11 +162,11 @@ def edit_session(session_id):
             return redirect(request.url)
         fs.sync()
         try:
-            db_session.commit()
+            db.session.commit()
             flash("Sucess: Session Modified")
         except:
             flash("Failed to update database")
-            db_session.rollback()
+            db.session.rollback()
         return redirect(request.url)
     if g.user.is_superuser():    
         return render_template('scan_form.html', scan=scan,
@@ -183,13 +183,13 @@ def del_problem(session_id):
     if not scan.problem:
         abort(404)
     try:
-        db_session.delete(prob)
-        db_session.commit()
+        db.session.delete(prob)
+        db.session.commit()
         flash("Success: Removed billing correction", category='success')
     except:
-        db_session.rollback()
+        db.session.rollback()
         flash("Database error", category='error')
-    return redirect(url_for('edit_session', session_id=scan.id))   
+    return redirect(url_for('billing.edit_session', session_id=scan.id))   
         
 @frontend.route('/session/<int:session_id>/problem/', methods=['GET', 'POST'])
 @authorized_users_only
@@ -201,8 +201,8 @@ def problem(session_id):
     # Lame ass formalchemy cannot handle a pending object
     # without id. Check for this and remove it from the scan
     # if needed
-    if prob in db_session and not prob.id:
-        db_session.expunge(prob)
+    if prob in db.session and not prob.id:
+        db.session.expunge(prob)
     fs = ProblemForm().bind(prob, data=request.form or None)
     if request.method=='POST' and fs.validate():
         if not g.user.is_superuser():
@@ -210,13 +210,13 @@ def problem(session_id):
         fs.sync()
         try:
             prob.scan = scan
-            db_session.add(prob)
-            db_session.commit()
+            db.session.add(prob)
+            db.session.commit()
             flash("Sucess: Problem added or modified", category='success')
         except:
             flash("Failed: Could not update database", category='error')
-            db_session.rollback()
-        return redirect(url_for('edit_session', session_id=scan.id))    
+            db.session.rollback()
+        return redirect(url_for('billing.edit_session', session_id=scan.id))    
     if g.user.is_superuser():
         return render_template('problem_form.html', scan=scan,
                                form=fs)
@@ -233,5 +233,5 @@ def problem_request(session_id):
         flash("We've received your report, you'll be notified of any changes to your invoice", 
               category='success')
         problem_send_email(session_id, form.problem, form.duration)
-        return redirect(url_for("edit_session", session_id=session_id))
-    return redirect(url_for('problem', session_id=session_id))
+        return redirect(url_for("billing.edit_session", session_id=session_id))
+    return redirect(url_for('billing.problem', session_id=session_id))

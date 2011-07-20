@@ -5,7 +5,7 @@ from datetime import datetime, date
 from decimal import Decimal
 from email.mime.text import MIMEText
 
-from flask import (render_template, request, session, g, redirect, url_for,
+from flask import (render_template, request, session, g, redirect,
                    abort, flash, send_file, escape, jsonify, current_app,
                    Blueprint)
 
@@ -27,7 +27,6 @@ def before_request():
         g.user = User.query.get(session['user_id'])
 
 # Utility functions
-
 def flatten(obj, attrib_filter=None):
     goodstuff = copy(obj.__dict__)
     if attrib_filter:
@@ -114,9 +113,10 @@ def invoice_send_email(invoice_id):
     msg['From'] = 'billing@cfmi.georgetown.edu'
     msg['Reply-to'] = 'cfmiadmin@georgetown.edu'
     msg['To'] = invoice.project.pi.email
-    recip = [invoice.project.pi.email, 'sn253@georgetown.edu',
-             'cfmiadmin@georgetown.edu']
-    if invoice.project.email and invoice.project.email is not invoice.project.pi.email:
+    recip = ['sn253@georgetown.edu']
+    if not current_app.config['TESTING']:
+        recip += [invoice.project.pi.email, 'cfmiadmin@georgetown.edu']
+        if invoice.project.email and invoice.project.email is not invoice.project.pi.email:
             msg['Cc'] = invoice.project.email
             recip.append(invoice.project.email)
     s = smtplib.SMTP()
@@ -137,7 +137,9 @@ def problem_send_email(session_id, problem, duration):
     msg['From'] = 'billing@cfmi.georgetown.edu'
     msg['Reply-to'] = g.user.email if g.user.email else scan.project.email
     msg['To'] = 'cfmiadmin@georgetown.edu'
-    recip = ['sn253@georgetown.edu', 'cfmiadmin@georgetown.edu']
+    recip = ['sn253@georgetown.edu']
+    if not current_app.config['TESTING']:
+        recip += ['cfmiadmin@georgetown.edu']
     if g.user.email:
         msg['Cc'] = g.user.email
         recip.append(g.user.email)
