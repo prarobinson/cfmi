@@ -1,0 +1,35 @@
+import os
+
+## Flask Settings
+
+SECRET_KEY = ''
+DEBUG = True
+TESTING = True
+SERVER_NAME = 'devel.localhost:5000'
+
+## Database Settings
+SQLALCHEMY_DATABASE_URI = \
+    ''
+
+SQLALCHEMY_BINDS = {'dicom':
+    ''}
+
+## Cache settings
+from flaskext.cache import Cache
+cache = Cache()
+if TESTING:
+    CACHE_TYPE = 'simple'
+else:
+    CACHE_TYPE = 'memcached'
+    CACHE_MEMCACHED_SERVERS = ('localhost:11211',)
+
+## File Paths
+TMP_PATH = '/tmp/'
+BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
+
+## Imaging Settings
+DICOM_ARCHIVE_FOLDER = BASE_PATH+'/dicom/'
+IMAGING_EMAIL = "imaging@cfmi.georgetown.edu"
+
+## Billing Settings
+BILLING_EMAIL = "cfmiadmin@georgetown.edu"
