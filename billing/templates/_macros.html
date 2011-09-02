@@ -2,11 +2,16 @@
 <div class="contentbox">
   <h1>{% if title %}{{ title }}: {% endif %}{{ project }}<span class="return-link">
       {{ date.strftime("%b. %Y") }}</span></h1>
+  <hr class="printonly" />
   <div class="subcontent">
-  <em>PI: {{ project.pi.name }}</em>
-  {% if project.rx_num and project.rx_num.startswith("RX") %}
-    <br />RX Num: {{ project.rx_num }}
+  <em class="noprint">PI: {{ project.pi.name }} <br /></em>
+  {% if project.rx_num %}
+    {% if project.rx_num.startswith("RX") %}
+  PO Num: {{ project.rx_num }}
+    {% else %}
+  Ref. Num: {{ project.rx_num }}
     {% endif %}
+  {% endif %}
   <div class="subcontent">
     <table class="invoice">
       <tr>

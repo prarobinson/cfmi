@@ -5,6 +5,30 @@
 
 {% block content %}
 
+<div id="invoice_header" class="printonly">
+  <div>
+    <img id="invoice_logo" src="/static/invoice_logo3.png" />
+    <span id="invoice_date"> {{ invoice.date.strftime("%b. 1, %Y") }}</span>
+  </div>
+  <div id="invoice_billing_address" class="span-6">
+    <h3>Bill to:</h3>
+    <pre>
+{{ invoice.project.pi.name }}
+{{ invoice.project.institution }}
+{{ invoice.project.address }}
+    </pre>
+  </div>
+  <div id="invoice_address" class="span-6 last">
+    <h3>Checks Payable to:</h3>
+    <pre>
+GUMC - CFMI
+3900 Reservior Rd. NW
+Preclinical Sciences Bldg, LM-14
+Washington, DC 20057
+    </pre>
+  </div>
+</div>
+
 {{ render_project(invoice.project, invoice.date, 'Invoice') }}
 
 {% endblock %}

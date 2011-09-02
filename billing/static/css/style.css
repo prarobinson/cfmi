@@ -122,3 +122,27 @@ textarea#session_notes {
 #userproblem {
     margin-left:100px;
 }
+
+@media print {
+  #nav { display:none; }
+  header { display:none; }
+  #main a {text-decoration:none;}
+  td {border:1px solid black;}
+  body { size: landscape;}
+  .printonly {
+    display:block;
+  }
+  .noprint {
+      display:none;
+  }
+  hr { border-bottom:2px solid black; margin:0; padding:0; }
+  #invoice_date { float:right; font-size:large; margin-right:45px;}
+  #invoice_logo { float:left;
+                  margin-left:5px;
+                  margin-right:75px;}
+  #invoice_address, #invoice_billing_address {margin-top:30px;}
+  pre {border:none; margin:0; padding:10px}
+  .return-link {visibility:hidden;}
+  h3 {font-size:small; }
+  .contentbox { page-break-inside: avoid; }
+}
