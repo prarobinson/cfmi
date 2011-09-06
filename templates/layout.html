@@ -43,11 +43,11 @@
       <img src="{{ url_for('static', filename="titlebar.png") }}" />
       {% block nav %}
       <div id="nav" class="span-24 last">
-        <a id="browse" href="/">Browse</a>
-        <a id="stats" href="http://cfmi.georgetown.edu/">Home</a>
-        <a id="reconcile" href="https://cfmi.georgetown.edu/secured/">Scheduling</a>
-        <a id="batch" href="https://billing.cfmi.georgetown.edu/">Billing</a>
-        <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
+        <a id="nav_1" href="{{ url_for('homepage.index') }}">Home</a>
+        <a id="nav_2" href="{{ url_for('imaging.index') }}">Imaging</a>
+	<a id="nav_3" href="https://cfmi.georgetown.edu/secured/">Scheduling</a>
+        <a id="nav_4" href="{{ url_for('billing.index') }}">Billing</a>
+        <a id="nav_5" href="{{ url_for('auth.logout') }}">Logout</a>
       </div> <!-- -End of #nav -->
       {% endblock %}
     </header>

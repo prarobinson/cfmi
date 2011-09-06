@@ -21,6 +21,14 @@ app.register_blueprint(billing, subdomain='billing')
 app.register_blueprint(billing_api, subdomain='billing',
                        url_prefix='/api')
 
+from cfmi.homepage import homepage
+app.register_blueprint(homepage)
+
+#from cfmi.scheduling import scheduling, scheduling_api
+#app.register_blueprint(scheduling, subdomain="schedule")
+#app.register_blueprint(scheduling_api, subdomain="schedule",
+#                       url_prefix='/api')
+
 from cfmi.database.newsite import User
 @app.before_request
 def before_request():
