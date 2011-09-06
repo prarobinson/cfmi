@@ -7,10 +7,11 @@
 
 <div id="invoice_header" class="printonly">
   <div>
-    <img id="invoice_logo" src="/static/invoice_logo3.png" />
+    <img id="georgetown_logo" src="/static/georgetown_logo.png" />
     <span id="invoice_date"> {{ invoice.date.strftime("%b. 1, %Y") }}</span>
+    <img id="cfmi_logo" src="/static/cfmi_logo.png" />
   </div>
-  <div id="invoice_billing_address" class="span-6">
+  <div id="invoice_billing_address" class="span-5">
     <h3>Bill to:</h3>
     <pre>
 {{ invoice.project.pi.name }}
@@ -18,7 +19,7 @@
 {{ invoice.project.address }}
     </pre>
   </div>
-  <div id="invoice_address" class="span-6 last">
+  <div id="invoice_address" class="span-5 last">
     <h3>Checks Payable to:</h3>
     <pre>
 GUMC - CFMI
@@ -29,6 +30,6 @@ Washington, DC 20057
   </div>
 </div>
 
-{{ render_project(invoice.project, invoice.date, 'Invoice') }}
+{{ render_project(invoice.project, invoice.date, "Invoice") }}
 
 {% endblock %}

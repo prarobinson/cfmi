@@ -123,6 +123,8 @@ textarea#session_notes {
     margin-left:100px;
 }
 
+.printonly { display:none; }
+
 @media print {
   #nav { display:none; }
   header { display:none; }
@@ -137,9 +139,12 @@ textarea#session_notes {
   }
   hr { border-bottom:2px solid black; margin:0; padding:0; }
   #invoice_date { float:right; font-size:large; margin-right:45px;}
-  #invoice_logo { float:left;
-                  margin-left:5px;
-                  margin-right:75px;}
+  #georgetown_logo { float:left;
+                     margin-right:35px;}
+  #cfmi_logo { float:right;
+	       position:absolute;
+	       right:35px;
+	       margin-top:60px;}
   #invoice_address, #invoice_billing_address {margin-top:30px;}
   pre {border:none; margin:0; padding:10px}
   .return-link {visibility:hidden;}
