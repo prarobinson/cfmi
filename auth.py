@@ -3,6 +3,7 @@ from flask import (Blueprint, url_for, redirect, session, flash, g,
                    request, render_template, current_app, abort)
 
 from cfmi.database.newsite import (User, Subject, Project, Session, Invoice)
+from cfmi.database.dicom import Series
 
 auth = Blueprint('auth', __name__)
 
@@ -34,7 +35,7 @@ def login():
 def logout():
     session.pop('user_id', None)
     flash("You have been logged out", category='info')
-    return redirect('/')
+    return redirect(url_for('.login'))
 
 def authorized_users_only(f):
     """ 
@@ -65,10 +66,9 @@ def authorized_users_only(f):
         if 'pi_uname' in kwargs:
             if g.user.username == kwargs['pi_uname']:
                 return f(*args, **kwargs)
-        #if self.app.config['CFMIAUTH_USING_DICOM']:
-        #    if 'series_id' in kwargs:
-        #        subj_str = Dicom.Series.query.get(
-        #            kwargs['series_id']).subject.name
+        if 'series_id' in kwargs:
+            subj_str = Series.query.get(
+                kwargs['series_id']).subject.name
         if subj_str:
             project = Subject.query.filter(
                 Subject.name==subj_str).first().project

@@ -6,6 +6,8 @@
 <link rel="stylesheet" href="{{ url_for('billing.static', filename="css/style.css") }}?v=2">
 {% endblock %}
 
+{% block title %}Billing{% endblock %}
+
 {% block nav %}
 {% if g.user and g.user.is_superuser() %}
 <div id="nav" class="span-24 last">

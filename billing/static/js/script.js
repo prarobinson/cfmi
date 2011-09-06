@@ -38,7 +38,7 @@ $().ready(function () {
             $(this).datepicker('setDate', new Date(year, month, 1));
 	    month = parseInt(month)+1
 	    $.getJSON('/api/user', function (data) {
-		window.location.href = '/'+data.username+'/'+year+'/'+month;
+		window.location.href = '/'+data.username+'/'+year+'/'+month+'/';
 	    })
 	}});
     $("#gen_inv").click(function() { 

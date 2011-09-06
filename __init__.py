@@ -9,7 +9,7 @@ db = SQLAlchemy(app)
 cache = Cache(app)
 
 from cfmi.auth import auth
-app.register_blueprint(auth)
+app.register_blueprint(auth, subdomain='auth')
 
 from cfmi.imaging import imaging, imaging_api
 app.register_blueprint(imaging, subdomain='imaging')
