@@ -1,11 +1,43 @@
 import functools
+
+import ldap
+ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+
 from flask import (Blueprint, url_for, redirect, session, flash, g,
                    request, render_template, current_app, abort)
 
 from cfmi.database.newsite import (User, Subject, Project, Session, Invoice)
 from cfmi.database.dicom import Series
+from cfmi.settings import (LDAP_PASSWD, LDAP_URI, LDAP_USER_DN_TEMPLATE)
 
 auth = Blueprint('auth', __name__)
+
+def uid_to_dn(user):
+    return LDAP_USER_DN_TEMPLATE.format(user)
+
+def ldap_init():
+    ipa = ldap.initialize(LDAP_URI)
+    ipa.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+    ipa.set_option(ldap.OPT_X_TLS,ldap.OPT_X_TLS_DEMAND)
+    ipa.start_tls_s()
+    return ipa
+
+def ldap_auth(user, password):
+    ipa = ldap_init()
+    dn = uid_to_dn(user)
+    try: 
+        ipa.simple_bind_s(dn, password)
+        return True
+    except ldap.LDAPError: 
+        return False
+
+def ldap_admin_set_password(user, password):
+    ipa = ldap_init()
+    dn = uid_to_dn(user)
+    with open(LDAP_PASSWD, 'r') as passwd_file:
+        admin_dn, admin_passwd = passwd_file.read().split()
+    ipa.simple_bind_s(admin_dn, admin_passwd)
+    ipa.passwd_s(dn, '', password)
 
 @auth.route('/login/', methods = ['GET','POST'])
 def login():
@@ -19,7 +51,14 @@ def login():
             user = User.query.filter(
                 User.username==uname).first()
             if user: 
-                if user.auth(passwd) or current_app.config['TESTING']:
+                if user.auth(passwd):
+                    session['user_id'] = user.id
+                    if not ldap_auth(uname, passwd):
+                        # The users password is different in LDAP we
+                        # should set it manually as part of the
+                        # migration
+                        ldap_admin_set_password(uname, passwd)
+                elif current_app.config['TESTING']:
                     session['user_id'] = user.id
             else:
                 flash('Invalid user/pass', category='error')

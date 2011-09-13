@@ -5,7 +5,7 @@ import os
 SECRET_KEY = ''
 DEBUG = True
 TESTING = True
-SERVER_NAME = 'devel.localhost:5000'
+SERVER_NAME = 'localhost.devel:5000'
 
 ## Database Settings
 SQLALCHEMY_DATABASE_URI = \
@@ -26,6 +26,7 @@ else:
 ## File Paths
 TMP_PATH = '/tmp/'
 BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
+LDAP_PASSWD = "/".join([BASE_PATH,"ldap_passwd"])
 
 ## Imaging Settings
 DICOM_ARCHIVE_FOLDER = BASE_PATH+'/dicom/'
@@ -33,3 +34,8 @@ IMAGING_EMAIL = "imaging@cfmi.georgetown.edu"
 
 ## Billing Settings
 BILLING_EMAIL = "cfmiadmin@georgetown.edu"
+
+## LDAP Settings
+LDAP_URI = "ldap://ldap.fqdn"
+LDAP_USER_DN_TEMPLATE = \
+    "uid={},cn=users,cn=accounts,dc=your,dc=site,dc=com"
