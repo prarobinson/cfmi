@@ -2,12 +2,24 @@ from flask import Flask, g, session
 from flaskext.sqlalchemy import SQLAlchemy
 from flaskext.cache import Cache
 
+from cfmi.settings import DefaultConfig
+
 db = SQLAlchemy()
 cache = Cache()
 
-def create_app(config='cfmi.settings'):
+def create_app(config=None):
     app = Flask(__name__)
-    app.config.from_object(config)
+    
+    # Load default Values
+    app.config.from_object(DefaultConfig())
+
+    # Override with values from object argument
+    if config is not None:
+        app.config.from_object(config)
+
+    # Load production values from the module specified by the
+    # CFMI_CONFIG envvar
+    app.config.from_envvar('CFMI_CONFIG', silent=True)
 
     db.init_app(app)
     cache.init_app(app)

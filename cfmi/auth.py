@@ -8,15 +8,14 @@ from flask import (Blueprint, url_for, redirect, session, flash, g,
 
 from cfmi.database.newsite import (User, Subject, Project, Session, Invoice)
 from cfmi.database.dicom import Series
-from cfmi.settings import (LDAP_PASSWD, LDAP_URI, LDAP_USER_DN_TEMPLATE)
 
 auth = Blueprint('auth', __name__)
 
 def uid_to_dn(user):
-    return LDAP_USER_DN_TEMPLATE.format(user)
+    return current_app.config['LDAP_USER_DN_TEMPLATE'].format(user)
 
 def ldap_init():
-    ipa = ldap.initialize(LDAP_URI)
+    ipa = ldap.initialize(current_app.config['LDAP_URI'])
     ipa.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
     ipa.set_option(ldap.OPT_X_TLS,ldap.OPT_X_TLS_DEMAND)
     ipa.start_tls_s()
@@ -34,9 +33,8 @@ def ldap_auth(user, password):
 def ldap_admin_set_password(user, password):
     ipa = ldap_init()
     dn = uid_to_dn(user)
-    with open(LDAP_PASSWD, 'r') as passwd_file:
-        admin_dn, admin_passwd = passwd_file.read().split()
-    ipa.simple_bind_s(admin_dn, admin_passwd)
+    ipa.simple_bind_s(current_app.config['LDAP_ADMIN'],
+                      current_app.config['LDAP_ADMIN_PASSWD'])
     ipa.passwd_s(dn, '', password)
 
 @auth.route('/login/', methods = ['GET','POST'])

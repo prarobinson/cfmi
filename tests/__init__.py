@@ -3,13 +3,12 @@
 from flaskext.testing import TestCase as Base
 
 from cfmi import create_app, db
+from cfmi.settings import TestConfig
 
 class TestCase(Base):
 
     def create_app(self):
-        app = create_app(config="cfmi.test_settings")
-        print app.config['SQLALCHEMY_DATABASE_URI']
-        return app
+        return create_app(TestConfig())
 
     def setUp(self):
         db.create_all()

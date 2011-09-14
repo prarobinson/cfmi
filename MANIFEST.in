@@ -1,0 +1,8 @@
+recursive-include cfmi/templates *
+recursive-include cfmi/static *
+recursive-include cfmi/imaging/templates *
+recursive-include cfmi/imaging/static *
+recursive-include cfmi/billing/templates *
+recursive-include cfmi/billing/static *
+recursive-include cfmi/homepage/templates *
+recursive-include cfmi/homepage/static *

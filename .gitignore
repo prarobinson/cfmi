@@ -1,3 +1,4 @@
 *pyc
-settings.py
-ldap_passwd
+production_settings.py
+cfmi.egg-info
+dist
