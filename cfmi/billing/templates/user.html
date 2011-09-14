@@ -17,7 +17,7 @@
         </tr>
         {% for invoice in unpaid %}
         <tr>
-          <td><a href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+          <td><a href="{{ url_for('billing.invoice', invoice_id=invoice.id) }}">
             {{ invoice.date.strftime("%b. %Y") }}</a></td>
           <td title="{{ invoice.project.name }}">{{ invoice.project.shortname(50) }}</td>
           <td>{{ invoice.total() }}</td>

@@ -41,7 +41,7 @@
       <span class="session_label">Session Log</span>
       <textarea id="session_notes" disabled="disabled">{{ scan.notes }}</textarea>
     </div>
-    <span class="return-link"><a class="button" href="{{ url_for('problem', session_id=scan.id) }}">Report Problem</a></span>
+    <span class="return-link"><a class="button" href="{{ url_for('billing.problem', session_id=scan.id) }}">Report Problem</a></span>
   </div>
 </div>
 

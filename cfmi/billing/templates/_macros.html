@@ -28,7 +28,7 @@
         <td>{{ print_user(scan.user) }}</td>
         <td>{{ scan.dur_hours() }} hrs. 
           {% if scan.is_corrected() %}
-          <a href="{{ url_for('problem', session_id=scan.id) }}">*</a>{% endif %}</td>
+          <a href="{{ url_for('billing.problem', session_id=scan.id) }}">*</a>{% endif %}</td>
         <td>{{ scan.cost() }} USD </td>
       </tr>
       {% endfor %}
