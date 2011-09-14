@@ -26,17 +26,16 @@ class DefaultConfig(object):
 
     ## Imaging Settings
     DICOM_ARCHIVE_FOLDER = BASE_PATH+'/dicom/'
-    IMAGING_EMAIL = "imaging@cfmi.georgetown.edu"
+    IMAGING_EMAIL = "imaging@example.com"
 
     ## Billing Settings
-    BILLING_EMAIL = "cfmiadmin@georgetown.edu"
+    BILLING_EMAIL = "billing@example.com"
 
     ## LDAP Settings
-    LDAP_ADMIN = ""
-    LDAP_ADMIN_PASSWD = ""
-    LDAP_URI = "ldap://localhost"
-    LDAP_USER_DN_TEMPLATE = \
-        "uid={},cn=accounts,dc=domain,dc=com"
+    LDAP_ADMIN = None
+    LDAP_ADMIN_PASSWD = None
+    LDAP_URI = None
+    LDAP_USER_DN_TEMPLATE = None
 
 class TestConfig(DefaultConfig):
     TESTING = True

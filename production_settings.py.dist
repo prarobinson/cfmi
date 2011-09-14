@@ -1,0 +1,42 @@
+import os
+
+## Flask Settings
+
+SECRET_KEY = 'secret' # CHANGE THIS!
+DEBUG = True
+TESTING = False
+SERVER_NAME = 'localhost.devel:5000'
+
+## Database Settings
+SQLALCHEMY_DATABASE_URI = \
+    'sqlite:///newsite.db'
+
+SQLALCHEMY_BINDS = {'dicom':
+    'sqlite:///dicom.db'}
+
+## Cache settings
+from flaskext.cache import Cache
+cache = Cache()
+if DEBUG:
+    CACHE_TYPE = 'simple'
+else:
+    CACHE_TYPE = 'memcached'
+    CACHE_MEMCACHED_SERVERS = ('localhost:11211',)
+
+## File Paths
+TMP_PATH = '/tmp/'
+BASE_PATH = "/".join(os.path.abspath(__file__).split("/")[:-1])
+
+## Imaging Settings
+DICOM_ARCHIVE_FOLDER = BASE_PATH+'/dicom/'
+IMAGING_EMAIL = "imaging@example.com"
+
+## Billing Settings
+BILLING_EMAIL = "billing@example.com"
+
+## LDAP Settings
+LDAP_ADMIN = "uid=admin,cn=accounts,dc=example,dc=com"
+LDAP_ADMIN_PASSWD = "secret"
+LDAP_URI = "ldap://ldap.example.com"
+LDAP_USER_DN_TEMPLATE = \
+    "uid={},cn=accounts,dc=example,dc=com"

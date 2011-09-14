@@ -1,17 +1,33 @@
 Quick Start:
 
-virutalenv cfmi
-cd cfmi
-. bin/activate
+mkdir cfmi
+virutalenv .env
+. .env/bin/activate
 git clone http://github.com/nocko/cfmi.git
 cd cfmi
-source ./bin/activate
-pip install -r requirements.txt
+python setup.py develop
 
-Copy setings.py.dist to settings.py and edit it to your needs
+A development server can be started by running: python cfmi
 
-A development server can be started by running python cfmi in the
-virutalenv directory
+More Info:
 
+The basic development deployment above uses in memory sqlite. It does
+not create the tables necessary for most functionality to work. It is
+expected that you will provide a more appropriate configuration
+modeled after production_settings.py.dist.
+
+You can load this production config by exporting the path to the
+module as CFMI_CONFIG:
+
+export CFMI_CONFIG=$HOME/production_settings.py
+
+or you may use the enclosed wsgi script to load them from the
+production_settings.py file in the working directory
+
+Testing:
+
+The test suite can be invoked by running:
+
+  python setup.py nosetests
 
 Happy Hacking
