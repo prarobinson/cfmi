@@ -1,3 +1,4 @@
-from cfmi import app
+from cfmi import create_app
 
+app = create_app()
 app.run()

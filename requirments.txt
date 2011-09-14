@@ -10,3 +10,4 @@ Flask-Cache>=0.3
 FormAlchemy>=1.3.5
 Flask-WTF>=0.5.2
 python-ldap==2.4.3
+Flask-Testing==0.3
