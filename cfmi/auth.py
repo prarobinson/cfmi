@@ -51,11 +51,12 @@ def login():
             if user: 
                 if user.auth(passwd):
                     session['user_id'] = user.id
-                    if not ldap_auth(uname, passwd):
-                        # The users password is different in LDAP we
-                        # should set it manually as part of the
-                        # migration
-                        ldap_admin_set_password(uname, passwd)
+                    if current_app.config['LDAP_URI']:
+                        if not ldap_auth(uname, passwd):
+                            # The users password is different in LDAP we
+                            # should set it manually as part of the
+                            # migration
+                            ldap_admin_set_password(uname, passwd)
                 elif current_app.config['TESTING']:
                     session['user_id'] = user.id
             else:
