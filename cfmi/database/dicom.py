@@ -1,3 +1,4 @@
+from flask import current_app
 from cfmi import db
 
 class DicomSubject(db.Model):
@@ -44,7 +45,8 @@ class Series(db.Model):
         return "<DicomSeries: {0}".format(self.id)
 
     def get_path(self):
-        return '/'.join(["/exports/raw/dicom/data/cfmi/MR",
+	base = current_app.config['DICOM_BASE_PATH']
+        return '/'.join([base,
                          self.date.strftime("%Y/%m/%d"),
                          self.study_id+".STU",
                          self.id+".SER"])

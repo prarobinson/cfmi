@@ -7,7 +7,7 @@ EXTEN=$2
 EMAIL=$4
 TMPDIR=`mktemp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT}`
-TEMPLATE=$HOME/cfmi/imaging/templates/email.tpl
+TEMPLATE=$HOME/cfmi/cfmi/imaging/templates/email.tpl
 
 cd $TMPDIR;
 mkdir $SUBJECT

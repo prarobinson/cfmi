@@ -25,7 +25,9 @@ def make_archive(filename):
     if not exten: abort(403)
     filename = "{0}.{1}".format(subject, exten)
     os.mknod(lockpath, 0660)
-    Popen(["compress.sh", subject, exten,
+    script_path = '/'.join([current_app.config['BASE_PATH'], 
+	"cfmi/cfmi/imaging/scripts/compress.sh"])
+    Popen([script_path, subject, exten,
           current_app.config['DICOM_ARCHIVE_FOLDER'], g.user.email])
     return True
 

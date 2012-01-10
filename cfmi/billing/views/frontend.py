@@ -38,7 +38,10 @@ def user_portal():
     unpaid = []
     for project in g.user.get_projects():
         # A kludgy way to get all the user's scans from the last month
-        recent += project.invoice_scans(today.year, today.month-1)
+        if today.month == 1:
+		recent += project.invoice_scans(today.year-1, 12)
+	else:
+        	recent += project.invoice_scans(today.year, today.month-1)
         unpaid += Invoice.query.filter(
             Invoice.project==project).filter(Invoice.reconciled==False).all()
     return render_template('user.html', recent=recent, unpaid=unpaid)

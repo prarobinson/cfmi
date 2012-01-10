@@ -27,7 +27,7 @@ def download(filename):
             abort(404)
         make_archive(filename)
         return render_template("processing.html", url=url_for(
-                'download', filename=filename))
+                'imaging.download', filename=filename))
 
 def sendfile(filename):
     if current_app.config["DEBUG"]:
