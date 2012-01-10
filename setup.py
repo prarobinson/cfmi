@@ -23,6 +23,7 @@ setup(
         'MySQL-python',
         'pam==0.1.3',
         'nose',
+        'python-memcache'
     ],
     dependency_links=['http://atlee.ca/software/pam/dist/0.1.3'],
     include_package_data=True,
