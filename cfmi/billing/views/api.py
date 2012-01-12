@@ -14,7 +14,7 @@ from cfmi.auth import (superuser_only, login_required,
                        authorized_users_only)
 
 from cfmi.billing.utils import limit_month, active_projects
-from cfmi import cache
+from cfmi import cache, db 
 
 api = Blueprint('billing_api', __name__, static_folder='../static',
                 template_folder='../templates')
@@ -97,8 +97,8 @@ def gen_invoices():
             inv = Invoice()
             inv.project = project
             inv.date = invoice_date
-            db_session.add(inv)
-            db_session.commit()
+            db.session.add(inv)
+            db.session.commit()
             count += 1
     return jsonify(new_invoices=count, status="Success")
 
@@ -126,7 +126,7 @@ def invoice_send_email(invoice_id):
                msg.as_string())
     s.quit()
     invoice.sent = True
-    db_session.commit()
+    db.session.commit()
     return model_instance("invoice", invoice_id)
 
 def problem_send_email(session_id, problem, duration):
@@ -172,8 +172,8 @@ def model_summary(model):
         inst = eval(model.capitalize())()
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
-        db_session.add(inst)
-        db_session.commit()
+        db.session.add(inst)
+        db.session.commit()
         return model_instance(model, inst.id) 
 
     object_list = eval(model.capitalize()).query.all()
@@ -188,15 +188,15 @@ def model_instance(model, id):
     if request.method == 'DELETE':
         if not inst:
             abort(404)
-        db_session.delete(inst)
-        db_session.commit()
+        db.session.delete(inst)
+        db.session.commit()
         return jsonify(flatten(inst))
     if request.method == 'PUT':
         if not inst:
             abort(404)
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
-        db_session.commit()
+        db.session.commit()
         inst = eval(model.capitalize()).query.get(id)
     if not inst:
         abort(404)
