@@ -10,23 +10,25 @@ from flask import (render_template, abort, request, g, url_for,
 from cfmi.database.dicom import Series, DicomSubject 
 from cfmi.database.newsite import (User, Project, Session, Invoice, Problem)
 
+def parse_filename(filename):
+    exten_depth = 1
+    if filename.split(".")[-2] == "nii":
+        exten_depth = 2
+    subject = '.'.join(filename.split(".")[:-exten_depth])
+    exten = ".".join(filename.split(".")[-exten_depth:])
+    return subject, exten
+
 def make_archive(filename):
     path = get_archive_path(filename)
     lockpath = path+".part"
     if exists(lockpath):
         return False
-    exten_depth = 1
-    if filename.split(".")[-2] == "nii":
-        exten_depth = 2
-    subject = '.'.join(filename.split(".")[:-exten_depth])
+    subject, exten = parse_filename(filename)
     r = find_series_or_404(subject)
-    exten = ".".join(filename.split(".")[-exten_depth:])
     valid_formats = ['tar', 'zip', 'tar.bz2']
     valid_formats += [".".join(["nii", format]) for format in valid_formats]
     # Default to raw+bz2 if we have an out of spec extension
-    exten = exten if exten in valid_formats else None
-    if not exten: abort(403)
-    filename = "{0}.{1}".format(subject, exten)
+    exten = exten if exten in valid_formats else abort(403)
     os.mknod(lockpath, 0660)
     script_path = '/'.join([current_app.config['BASE_PATH'], 
 	"cfmi/cfmi/imaging/scripts/compress.sh"])

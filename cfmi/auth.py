@@ -8,6 +8,7 @@ from flask import (Blueprint, url_for, redirect, session, flash, g,
 
 from cfmi.database.newsite import (User, Subject, Project, Session, Invoice)
 from cfmi.database.dicom import Series
+from cfmi.utils import parse_filename
 
 auth = Blueprint('auth', __name__)
 
@@ -88,7 +89,7 @@ def authorized_users_only(f):
         if g.user.is_superuser():
             return f(*args, **kwargs)
         if 'filename' in kwargs:
-            subj_str = kwargs['filename'].split(".")[0]
+            subj_str, exten = parse_filename(kwargs['filename'])
         if 'subject' in kwargs:
             subj_str = kwargs['subject']
         if 'session_id' in kwargs:
@@ -115,7 +116,7 @@ def authorized_users_only(f):
         if project:
             if project.auth(g.user):
                 return f(*args, **kwargs)
-        return abort(403)
+        abort(403)
     return wrapper
 
 def login_required(f):
