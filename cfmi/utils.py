@@ -15,9 +15,12 @@ def make_archive(filename):
     lockpath = path+".part"
     if exists(lockpath):
         return False
-    subject = filename.split(".")[0]
+    exten_depth = 1
+    if filename.split(".")[-2] == "nii":
+        exten_depth = 2
+    subject = '.'.join(filename.split(".")[:-exten_depth])
     r = find_series_or_404(subject)
-    exten = ".".join(filename.split(".")[1:])
+    exten = ".".join(filename.split(".")[-exten_depth:])
     valid_formats = ['tar', 'zip', 'tar.bz2']
     valid_formats += [".".join(["nii", format]) for format in valid_formats]
     # Default to raw+bz2 if we have an out of spec extension
