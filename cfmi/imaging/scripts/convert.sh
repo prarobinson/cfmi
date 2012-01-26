@@ -51,32 +51,30 @@ done
 
 
 echo ${FREESURFER_HOME}
-which mri_convert
+#which mri_convert
+which dcm2nii
 
 subjid=${1}
 outdir=${2}
 
 # Get the paths and scan names for this subject, if they exist
 echo "Getting image info for ${subjid}..."
-paths=(`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${subjid}`)
+paths=(`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${subjid} | sed 's_exports_glusterfs/mirror/cfmi_g'`)
+#paths=(`wget --no-check-certificate https://imaging.cfmi.georgetown.edu/api/path/${subjid} -O -| sed 's_exports_glusterfs/mirror/cfmi_g'`)
 if [ ${#paths[0]} == 0 ]; then
   echo "No data found for subject ${subjid}...exiting"
+  exit
 else
   if [ ! -e ${outdir}${subjid} ]; then
     mkdir ${outdir}${subjid}
   fi 
   for imgpath in ${paths[*]}; do
-    if [ -d ${imgpath}/1.ACQ/ ]; then
-      firstfile=`ls ${imgpath}/1.ACQ/ | head -1`
-      names=(`strings ${imgpath}/1.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g'`)
-      rootname=${names[${#names[*]}-1]}
-    else
-      firstfile=`ls ${imgpath}/5.ACQ/ | head -1`
-	  names=(`strings ${imgpath}/5.ACQ/${firstfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g'`)
-      rootname=${names[${#names[*]}-1]}
-	fi
-    imgfiles=(${imgfiles[*]} ${firstfile})
-    datestring=`echo ${imgpath} | awk -F"/" '{print $8 $9 $10}'`
+    firstrawdir=`ls ${imgpath} | head -1`
+    firstrawfile=`ls ${imgpath}/${firstrawdir}/ | head -1`
+    names=(`strings ${imgpath}/${firstrawdir}/${firstrawfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g'`)
+    rootname=${names[${#names[*]}-1]}
+    imgfiles=(${imgfiles[*]} ${firstrawfile})
+    datestring=`echo ${imgpath} | awk -F"/" '{print $10 $11 $12}'`
     nameNdate="${rootname}_${datestring}"
     imgnames=(${imgnames[*]} ${nameNdate})
   done
@@ -149,7 +147,7 @@ else
         modality4D=(${otherEPIs[*]})
     ;;
       "pdt2"|"PDT2"|"pd-t2"|"PD-T2")
-        # Both PD and T1 slices are in the same directory, so they must be handled slightly differently:      
+        # Both PD and T2 slices are in the same directory, so they must be handled slightly differently:      
         for pdt2 in ${PDT2s[*]}; do
           echo "Converting ${paths[${pdt2}]}/1.ACQ/"
           if [ -e ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag} ]; then
@@ -166,23 +164,24 @@ else
           dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
           #mri_convert ${paths[${t1}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${t1}]}_${ord}.nii${gzflag} 
           mv ${tmpdir}/o0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
-          mv ${tmpdir}/o1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+          mv ${tmpdir}/o1.nii${gzflag} ${outdir}${subjid}/T2_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
           rm ${tmpdir}/* 
         done
     ;;
     esac
     
     for j in ${modality3D[*]}; do
-      echo "Converting ${paths[${j}]}/1.ACQ/"
+      firstrawdir=`ls ${paths[${j}]}/ | head -1`
+      echo "Converting ${paths[${j}]}/${firstrawdir}/"
       if [ -e ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag} ]; then
         ord=$((${ord} + 1))
       else
         ord=1
       fi
-      files=(`ls ${paths[${j}]}/1.ACQ/`) 
+      files=(`ls ${paths[${j}]}/${firstrawdir}/`) 
       counter=0
       for file in ${files[*]}; do 
-        ln -s ${paths[${j}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
+        ln -s ${paths[${j}]}/${firstrawdir}/${file} ${tmpdir}/${counter}.IMA
         counter=$((${counter} + 1))
       done
       dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
@@ -191,11 +190,13 @@ else
       orient=`ls ${tmpdir}/ | grep '^o'`
       if [ ${#niis[*]} == 1 ]; then
         mv -v ${tmpdir}/${niis[0]} ${outdir}${subjid}/${imgnames[${j}]}_${ord}.nii${gzflag}
-        #mv -v ${tmpdir}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
-      else
+	if [ "${orient}" != "" ]; then        
+	  mv -v ${tmpdir}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
+	fi      
+	else
         is_field=`echo ${imgnames[$j]} | grep field`
         if [ "${is_field}" != "" ]; then
-          type=`strings ${paths[$j]}/1.ACQ/${files[0]} | grep ORIGINAL | awk -F'\' '{print $3}'`
+          type=`strings ${paths[$j]}/${firstrawdir}/${files[0]} | grep ORIGINAL | awk -F'\' '{print $3}'`
           mv -v ${tmpdir}/0.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo1_${ord}.nii${gzflag}
           mv -v ${tmpdir}/55.nii${gzflag} ${outdir}${subjid}/${imgnames[${j}]}_${type}_echo2_${ord}.nii${gzflag}
         fi
@@ -204,13 +205,9 @@ else
     done
       
     for k in ${modality4D[*]}; do
-      if [ -d ${paths[${k}]}/1.ACQ/ ]; then
-        files=(`ls ${paths[${k}]}/1.ACQ/`)
-        is_MOCO=`strings ${paths[${k}]}/1.ACQ/*.IMA | grep -e "ND.MOCO"`
-      else
-        files=(`ls ${paths[${k}]}/5.ACQ/`)
-        is_MOCO=`strings ${paths[${k}]}/5.ACQ/*.IMA | grep -e "ND.MOCO"`
-      fi  
+      firstrawdir=`ls ${paths[${k}]}/ | head -1`
+      files=(`ls ${paths[${k}]}/${firstrawdir}/`)
+      is_MOCO=`strings ${paths[${k}]}/${firstrawdir}/${files[0]} | grep -e "ND.MOCO"`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag} ]; then
@@ -221,17 +218,14 @@ else
           for vol in `ls ${paths[${k}]}`; do
             ln -s ${paths[${k}]}/${vol}/* ${tmpdir}/${vol}.IMA
           done
-          if [ -e ${tmpdir}/1.ACQ.IMA ]; then
-            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/1.ACQ.IMA
-            #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
-            mv -v ${tmpdir}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
-            if [ -e  ${tmpdir}/1ACQ.bvec ]; then
-              mv -v ${tmpdir}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bvec
-              mv -v ${tmpdir}/1ACQ.bval ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bval
-            fi
-          else 
-            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/5.ACQ.IMA
-            mv -v ${tmpdir}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          firsttmpdir=`ls ${tmpdir}/ | head -1`
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/${firsttmpdir}
+          #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          mv -v ${tmpdir}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          bvecs_are=`ls ${tmpdir}/ | grep bvec`
+          if [ "${bvecs_are}" != "" ]; then
+            mv -v ${tmpdir}/*.bvec ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bvec
+            mv -v ${tmpdir}/*.bval ${outdir}${subjid}/${imgnames[${k}]}_${ord}.bval
           fi
           rm ${tmpdir}/*
         else
@@ -246,24 +240,25 @@ else
  ####### Convert all images if imgtype is not set: ###########################################################
     echo "No image type specified (dti, t1, etc.,): converting all images for subject ${subjid}."
     for l in ${T1s[*]} ${PDs[*]} ${FLAIRs[*]} ${FIELDs[*]}; do
-      echo "Converting ${paths[${l}]}/1.ACQ/"
+      firstrawdir=`ls ${paths[${l}]}/ | head -1`
+      echo "Converting ${paths[${l}]}/${firstrawdir}/"
       if [ -e ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag} ]; then
         ord=$((${ord} + 1))
       else
         ord=1
       fi
-      if [ -d ${paths[${l}]}/1.ACQ/ ]; then
-        files=(`ls ${paths[${l}]}/1.ACQ/`) 
+      if [ -d ${paths[${l}]}/${firstrawdir}/ ]; then
+        files=(`ls ${paths[${l}]}/${firstrawdir}/`) 
         counter=0
         for file in ${files[*]}; do 
-          ln -s ${paths[${l}]}/1.ACQ/${file} ${tmpdir}/${counter}.IMA
+          ln -s ${paths[${l}]}/${firstrawdir}/${file} ${tmpdir}/${counter}.IMA
           counter=$((${counter} + 1))
         done
       else
-        files=(`ls ${paths[${l}]}/5.ACQ/`)
+        files=(`ls ${paths[${l}]}/${firstrawdir}/`)
         counter=0
         for file in ${files[*]}; do 
-          ln -s ${paths[${l}]}/5.ACQ/${file} ${tmpdir}/${counter}.IMA
+          ln -s ${paths[${l}]}/${firstrawdir}/${file} ${tmpdir}/${counter}.IMA
           counter=$((${counter} + 1))
         done
       fi
@@ -273,7 +268,9 @@ else
       orient=`ls ${tmpdir}/ | grep '^o'`
       if [ ${#niis[*]} == 1 ]; then
         mv -v ${tmpdir}/${niis[0]} ${outdir}${subjid}/${imgnames[${l}]}_${ord}.nii${gzflag}
-        #mv -v ${tmpdir}/${orient} ${outdir}${subjid}/${imgnames[${l}]}_orient${ord}.nii${gzflag}
+        if [ "${orient}" != "" ]; then        
+	  mv -v ${tmpdir}/${orient} ${outdir}${subjid}/${imgnames[${j}]}_orient${ord}.nii${gzflag}
+	fi
       else
         is_field=`echo ${imgnames[$l]} | grep field`
         if [ "${is_field}" != "" ]; then
@@ -301,18 +298,14 @@ else
       dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/0.IMA
       #mri_convert ${paths[${t1}]}/1.ACQ/${files[0]} ${outdir}${subjid}/${imgnames[${t1}]}_${ord}.nii${gzflag} 
       mv ${tmpdir}/0.nii${gzflag} ${outdir}${subjid}/PD_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
-      mv ${tmpdir}/1.nii${gzflag} ${outdir}${subjid}/T1_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
+      mv ${tmpdir}/1.nii${gzflag} ${outdir}${subjid}/T2_${imgnames[${pdt2}]}_${ord}.nii${gzflag}
       rm ${tmpdir}/* 
     done
     
     for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
-      if [ -d ${paths[${m}]}/1.ACQ/ ]; then
-        files=(`ls ${paths[${m}]}/1.ACQ/`)
-        is_MOCO=`strings ${paths[${m}]}/1.ACQ/*.IMA | grep -e "ND.MOCO"`
-      else
-        files=(`ls ${paths[${m}]}/5.ACQ/`)
-        is_MOCO=`strings ${paths[${m}]}/5.ACQ/*.IMA | grep -e "ND.MOCO"`
-      fi
+      firstrawdir=`ls ${paths[${m}]}/ | head -1`
+      files=(`ls ${paths[${m}]}/${firstrawdir}/`)
+      is_MOCO=`strings ${paths[${m}]}/${firstrawdir}/${files[0]} | grep -e "ND.MOCO"`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
@@ -323,17 +316,14 @@ else
           for vol in `ls ${paths[${m}]}`; do
             ln -s ${paths[${m}]}/${vol}/* ${tmpdir}/${vol}.IMA
           done
-          if [ -e ${tmpdir}/1.ACQ.IMA ]; then
-            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/1.ACQ.IMA
-            #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-            mv -v ${tmpdir}/1ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
-            if [ -e  ${tmpdir}/1ACQ.bvec ]; then
-              mv -v ${tmpdir}/1ACQ.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
-              mv -v ${tmpdir}/1ACQ.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
-            fi
-          else 
-            dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/5.ACQ.IMA
-            mv -v ${tmpdir}/5ACQ.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+          firsttmpdir=`ls ${tmpdir}/ | head -1`
+          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/${firsttmpdir}
+          #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
+          mv -v ${tmpdir}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
+          bvecs_are=`ls ${tmpdir}/ | grep bvec`
+          if [ "${bvecs_are}" != "" ]; then
+            mv -v ${tmpdir}/*.bvec ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bvec
+            mv -v ${tmpdir}/*.bval ${outdir}${subjid}/${imgnames[${m}]}_${ord}.bval
           fi
           rm ${tmpdir}/*
         else
