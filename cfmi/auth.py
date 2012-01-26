@@ -60,9 +60,9 @@ def user_auth(user, passwd):
     uname = user.username
     try:
         ldap_success = current_app.config['USE_LDAP_AUTH'] and ldap_auth(uname, passwd)
+        nis_success = False
         if not ldap_success:
             nis_success = current_app.config['USE_NIS_AUTH'] and nis_auth(uname, passwd)
-        nis_success = "Not used"
     except ldap.SERVER_DOWN:
         ldap_success = False
         print 'Error: Can\'t contact LDAP server'
