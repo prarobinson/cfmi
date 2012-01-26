@@ -9,10 +9,10 @@ SERVER_NAME = 'localhost.devel:5000'
 
 ## Database Settings
 SQLALCHEMY_DATABASE_URI = \
-    'sqlite:///newsite.db'
+        'sqlite:///'
 
 SQLALCHEMY_BINDS = {'dicom':
-    'sqlite:///dicom.db'}
+        'sqlite:///'}
 
 ## Cache settings
 from flaskext.cache import Cache
@@ -35,8 +35,11 @@ IMAGING_EMAIL = "imaging@example.com"
 BILLING_EMAIL = "billing@example.com"
 
 ## LDAP Settings
-LDAP_ADMIN = "uid=admin,cn=accounts,dc=example,dc=com"
+USE_LDAP_AUTH = True
+USE_NIS_AUTH = True
+LDAP_MIGRATE_FROM_NIS = True
+LDAP_ADMIN = "cn=Directory Manager"
 LDAP_ADMIN_PASSWD = "secret"
 LDAP_URI = "ldap://ldap.example.com"
 LDAP_USER_DN_TEMPLATE = \
-    "uid={},cn=accounts,dc=example,dc=com"
+    "uid={},cn=users,cn=accounts,dc=example,dc=com"

@@ -21,11 +21,9 @@ setup(
         'FormAlchemy',
         'python-ldap',
         'MySQL-python',
-        'pam==0.1.3',
         'nose',
         'python-memcached'
     ],
-    dependency_links=['http://atlee.ca/software/pam/dist/0.1.3'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',

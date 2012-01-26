@@ -2,3 +2,4 @@
 production_settings.py
 cfmi.egg-info
 dist
+.env/

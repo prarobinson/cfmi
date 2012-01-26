@@ -1,5 +1,3 @@
-import pam
-
 from cfmi import db
 
 users_assoc_table = db.Table(
@@ -34,10 +32,6 @@ class User(db.Model):
         for project in self.projects + self.pi_projects:
             if not project in l: l.append(project)
         return l
-
-    def auth(self, password):
-        return pam.authenticate(self.username, password)
-
 
 class Project(db.Model):
     __tablename__ = 'billing_projects'

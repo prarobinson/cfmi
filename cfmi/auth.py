@@ -1,5 +1,6 @@
 import functools
 
+import nis, crypt
 import ldap
 ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 
@@ -12,8 +13,8 @@ from cfmi.utils import parse_filename
 
 auth = Blueprint('auth', __name__)
 
-def uid_to_dn(user):
-    return current_app.config['LDAP_USER_DN_TEMPLATE'].format(user)
+def uid_to_dn(uname):
+    return current_app.config['LDAP_USER_DN_TEMPLATE'].format(uname)
 
 def ldap_init():
     ipa = ldap.initialize(current_app.config['LDAP_URI'])
@@ -22,21 +23,66 @@ def ldap_init():
     ipa.start_tls_s()
     return ipa
 
-def ldap_auth(user, password):
+def ldap_auth(uname, password):
     ipa = ldap_init()
-    dn = uid_to_dn(user)
+    dn = uid_to_dn(uname)
     try: 
         ipa.simple_bind_s(dn, password)
         return True
     except ldap.LDAPError: 
         return False
 
-def ldap_admin_set_password(user, password):
-    ipa = ldap_init()
-    dn = uid_to_dn(user)
-    ipa.simple_bind_s(current_app.config['LDAP_ADMIN'],
-                      current_app.config['LDAP_ADMIN_PASSWD'])
-    ipa.passwd_s(dn, '', password)
+def nis_auth(uname, password):
+    crypt_passwd = nis.cat("passwd.byname")[uname].split(':')[1]
+    return crypt.crypt(password, crypt_passwd) == crypt_passwd
+
+def ldap_admin_set_password(uname, password):
+    try:
+        ipa = ldap_init()
+        dn = uid_to_dn(uname)
+        ipa.simple_bind_s(current_app.config['LDAP_ADMIN'],
+                          current_app.config['LDAP_ADMIN_PASSWD'])
+        ipa.passwd_s(dn, '', password)
+        print "Set LDAP password for user: {}".format(uname)
+    except ldap.LDAPError, e:
+        print 'Failed to set LDAP password for user {}: {}'.format(uname, e)
+
+#def nis_change_password(uname, password, new):
+#    pass
+
+#def ldap_change_password(uname, password, new):
+#    ipa = ldap_init()
+#    dn = uid_to_dn(uname)
+#    ipa.simple_bind_s(dn, password)
+#    ipa.passwd_s(dn, password, new)
+
+def user_auth(user, passwd):
+    uname = user.username
+    try:
+        ldap_success = current_app.config['USE_LDAP_AUTH'] and ldap_auth(uname, passwd)
+        if not ldap_success:
+            nis_success = current_app.config['USE_NIS_AUTH'] and nis_auth(uname, passwd)
+        nis_success = "Not used"
+    except ldap.SERVER_DOWN:
+        ldap_success = False
+        print 'Error: Can\'t contact LDAP server'
+    except nis.error as e:
+        print 'NIS Error: {}'.format(e)
+        nis_success = False
+    
+    if current_app.config['LDAP_MIGRATE_FROM_NIS']:
+        if not ldap_success and nis_success:
+            ldap_admin_set_password(uname, passwd)
+            
+    print 'User {} LDAP Login: {}'.format(uname, ldap_success)
+    print 'User {} NIS Login: {}'.format(uname, nis_success)
+    return ldap_success or nis_success
+
+User.auth = user_auth
+
+#def change_password(user, password, new):
+#    if current_app.config['USE_LDAP_AUTH']: ldap_change_password(user, password, new)
+#    if current_app.config['USE_NIS_AUTH']: nis_change_password(user, password, new)
 
 @auth.route('/login/', methods = ['GET','POST'])
 def login():
