@@ -1,8 +1,6 @@
 import functools
 import smtplib
-from copy import copy
 from datetime import datetime, date
-from decimal import Decimal
 from email.mime.text import MIMEText
 
 from flask import (render_template, request, session, g, redirect,
@@ -14,7 +12,8 @@ from cfmi.auth import (superuser_only, login_required,
                        authorized_users_only)
 
 from cfmi.billing.utils import limit_month, active_projects
-from cfmi import cache, db 
+from cfmi import cache, db
+from cfmi.utils import flatten
 
 api = Blueprint('billing_api', __name__, static_folder='../static',
                 template_folder='../templates')
@@ -25,42 +24,6 @@ def before_request():
     g.user = None
     if 'user_id' in session:
         g.user = User.query.get(session['user_id'])
-
-# Utility functions
-def flatten(obj, attrib_filter=None):
-    goodstuff = copy(obj.__dict__)
-    if attrib_filter:
-        for key in obj.__dict__:
-            if not key in attrib_filter:
-                del goodstuff[key]
-    for key, value in obj.__dict__.iteritems():
-        if isinstance(value, (User, Project, Session, Invoice, Problem)):
-            del goodstuff[key]
-    for key, value in goodstuff.iteritems():
-        if isinstance(value, datetime):
-            goodstuff[key]=value.strftime("%m/%d/%Y %H:%M")
-        if isinstance(value, date):
-            goodstuff[key]=value.strftime("%m/%d/%Y")
-        if isinstance(value, Decimal):
-            goodstuff[key]=float(value)
-    if '_sa_instance_state' in goodstuff:
-        del goodstuff['_sa_instance_state']
-    return goodstuff
-
-def safe_eval(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except NameError:
-            ## Incorrect model name attempted
-            abort(403)
-        except AttributeError:
-            ## existing non-model class access attempted
-            abort(403)
-    return wrapper
-
-
 
 # Views
 
@@ -163,49 +126,6 @@ def spoof_user(username):
         abort(404)
     session['user_id'] = user.id
     return jsonify({})
-    
-@api.route('/db/<model>', methods=['GET', 'POST'])
-@superuser_only
-#@safe_eval
-def model_summary(model):
-    if request.method == 'POST':
-        inst = eval(model.capitalize())()
-        for key, value in request.json.iteritems():
-            inst.__setattr__(key, value)
-        db.session.add(inst)
-        db.session.commit()
-        return model_instance(model, inst.id) 
-
-    object_list = eval(model.capitalize()).query.all()
-    flat_list = [flatten(object) for object in object_list]
-    return jsonify({'model': model, 'object_list': flat_list})
-
-@api.route('/db/<model>/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@superuser_only
-#@safe_eval
-def model_instance(model, id):
-    inst = eval(model.capitalize()).query.get(id)
-    if request.method == 'DELETE':
-        if not inst:
-            abort(404)
-        db.session.delete(inst)
-        db.session.commit()
-        return jsonify(flatten(inst))
-    if request.method == 'PUT':
-        if not inst:
-            abort(404)
-        for key, value in request.json.iteritems():
-            inst.__setattr__(key, value)
-        db.session.commit()
-        inst = eval(model.capitalize()).query.get(id)
-    if not inst:
-        abort(404)
-    return jsonify(flatten(inst))
-
-@api.route('/user')
-@login_required
-def user_info():
-    return jsonify(flatten(g.user))
 
 @api.route('/projects')
 @login_required

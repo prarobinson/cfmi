@@ -3,12 +3,34 @@ import pickle
 from datetime import timedelta, date, datetime
 from os.path import exists
 from subprocess import Popen
+from copy import copy
+from decimal import Decimal
 
 from flask import (render_template, abort, request, g, url_for,
                    current_app)
 
 from cfmi.database.dicom import Series, DicomSubject 
 from cfmi.database.newsite import (User, Project, Session, Invoice, Problem)
+
+def flatten(obj, attrib_filter=None):
+    goodstuff = copy(obj.__dict__)
+    if attrib_filter:
+        for key in obj.__dict__:
+            if not key in attrib_filter:
+                del goodstuff[key]
+    for key, value in obj.__dict__.iteritems():
+        if isinstance(value, (User, Project, Session, Invoice, Problem, [].__class__)):
+            del goodstuff[key]
+    for key, value in goodstuff.iteritems():
+        if isinstance(value, datetime):
+            goodstuff[key]=value.strftime("%m/%d/%Y %H:%M")
+        if isinstance(value, date):
+            goodstuff[key]=value.strftime("%m/%d/%Y")
+        if isinstance(value, Decimal):
+            goodstuff[key]=float(value)
+    if '_sa_instance_state' in goodstuff:
+        del goodstuff['_sa_instance_state']
+    return goodstuff
 
 def parse_filename(filename):
     exten_depth = 1

@@ -123,10 +123,6 @@ def logout():
     return redirect(url_for('.login'))
 
 def authorized_users_only(f):
-    """ 
-    Ensures the logged in user is authorized for the subject 
-    in the kwarg 'subject' 
-    """
     @functools.wraps(f)
     @login_required
     def wrapper(*args, **kwargs):
@@ -134,6 +130,10 @@ def authorized_users_only(f):
         project = None
         if g.user.is_superuser():
             return f(*args, **kwargs)
+        if 'model' in kwargs:
+            model = kwargs['model']
+            model_id = kwargs['id']
+            if model = 'sub
         if 'filename' in kwargs:
             subj_str, exten = parse_filename(kwargs['filename'])
         if 'subject' in kwargs:

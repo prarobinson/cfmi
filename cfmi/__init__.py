@@ -23,6 +23,7 @@ def create_app(config=None):
 
     db.init_app(app)
     cache.init_app(app)
+    from cfmi.api import rest
 
     from cfmi.auth import auth
     app.register_blueprint(auth, subdomain='auth')
@@ -31,19 +32,25 @@ def create_app(config=None):
     app.register_blueprint(imaging, subdomain='imaging')
     app.register_blueprint(imaging_api, subdomain='imaging',
                            url_prefix='/api')
+    app.register_blueprint(rest, subdomain="imaging",
+                           url_prefix='/api')
 
     from cfmi.billing import billing, billing_api
     app.register_blueprint(billing, subdomain='billing')
     app.register_blueprint(billing_api, subdomain='billing',
                            url_prefix='/api')
+    app.register_blueprint(rest, subdomain="billing",
+                           url_prefix='/api')
 
     from cfmi.homepage import homepage
     app.register_blueprint(homepage)
     
-    #from cfmi.scheduling import scheduling, scheduling_api
-    #app.register_blueprint(scheduling, subdomain="schedule")
-    #app.register_blueprint(scheduling_api, subdomain="schedule",
-    #                       url_prefix='/api')
+    from cfmi.schedule import schedule, schedule_api
+    app.register_blueprint(schedule, subdomain="schedule")
+    app.register_blueprint(schedule_api, subdomain="schedule",
+                           url_prefix='/api')
+    app.register_blueprint(rest, subdomain="schedule",
+                           url_prefix='/api')
 
     from cfmi.database.newsite import User
     @app.before_request
