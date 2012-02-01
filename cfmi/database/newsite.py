@@ -33,6 +33,13 @@ class User(db.Model):
             if not project in l: l.append(project)
         return l
 
+    def get_subjects(self):
+        l = []
+        for project in self.get_projects():
+            for subject in project.get_subjects():
+                if not subject in l: l.append(subject)
+        return l
+
 class Project(db.Model):
     __tablename__ = 'billing_projects'
     id = db.Column(db.Integer, primary_key=True)

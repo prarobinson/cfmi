@@ -19,8 +19,11 @@ def flatten(obj, attrib_filter=None):
             if not key in attrib_filter:
                 del goodstuff[key]
     for key, value in obj.__dict__.iteritems():
-        if isinstance(value, (User, Project, Session, Invoice, Problem, [].__class__)):
+        if isinstance(value, (User, Project, Session, Invoice, Problem)):
             del goodstuff[key]
+        if isinstance(value, [].__class__):
+            goodstuff[key] = [flatten(subitem, attrib_filter=['id','username']f) for subitem in value]
+            print value
     for key, value in goodstuff.iteritems():
         if isinstance(value, datetime):
             goodstuff[key]=value.strftime("%m/%d/%Y %H:%M")
