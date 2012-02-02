@@ -1,5 +1,7 @@
 from cfmi import db
 
+from cfmi.database.dicom import Series
+
 users_assoc_table = db.Table(
     'Projects2Users', db.Model.metadata,
     db.Column('User_ID', db.Integer, 
@@ -89,6 +91,10 @@ class Subject(db.Model):
     project = db.relationship(Project, backref=db.backref(
             'subjects', order_by=name))
 
+    def __init__(*args, **kwargs):
+        self.dicomsubject_id = DicomSubject.query.filter_by(name=self.name).first().id
+        db.Model.__init__(*args, **kwargs)
+
     def __repr__(self):
         return self.name
 
@@ -123,6 +129,13 @@ class Session(db.Model):
 
     def auth(self, user):
         return self.project.auth(user)
+
+    def duration(self):
+        return (self.end - self.start).seconds
+
+    @property
+    def data(self):
+       return Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all() 
 
 class Problem(db.Model):
     __tablename__='Problems'

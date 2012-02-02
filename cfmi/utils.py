@@ -22,7 +22,7 @@ def flatten(obj, attrib_filter=None):
         if isinstance(value, (User, Project, Session, Invoice, Problem)):
             del goodstuff[key]
         if isinstance(value, [].__class__):
-            goodstuff[key] = [flatten(subitem, attrib_filter=['id','username']f) for subitem in value]
+            goodstuff[key] = [flatten(subitem, attrib_filter=['id','username']) for subitem in value]
             print value
     for key, value in goodstuff.iteritems():
         if isinstance(value, datetime):
