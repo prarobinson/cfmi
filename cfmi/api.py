@@ -218,4 +218,4 @@ def model_summary(model):
 @rest.route('/user')
 @login_required
 def user_info():
-    return jsonify(flatten(g.user))
+    return jsonify(flatten(g.user, attrib_filter=['name','url','username']))
