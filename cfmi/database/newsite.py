@@ -134,8 +134,10 @@ class Session(db.Model):
         return (self.end - self.start).seconds
 
     @property
-    def data(self):
-       return Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all() 
+    def series(self):
+        if not self.start:
+            return None
+        return Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all() 
 
 class Problem(db.Model):
     __tablename__='Problems'

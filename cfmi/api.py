@@ -38,7 +38,7 @@ API_MODEL_EQ = {'pi': 'user'}
 STRING_KEYED_MODELS = [Series, DicomSubject]
 
 ## No summary allowed on these Models due to performance concerns.
-NO_SUMMARY_ALLOWED = [Session, Series, DicomSubject]
+NO_SUMMARY_ALLOWED = [Series]
 
 ## Authorization
 USER_CREATABLE_MODELS = [Session, Subject, Project, Problem]
@@ -96,11 +96,11 @@ def flatten(obj, attrib_filter=None):
                 value = instance_to_url(model, pk=value)
         if value.__class__ in API_MODEL_MAP.values():
             ## The field is a foreign keyed object, replace with url
-            #goodstuff[key] = instance_to_url(value)
             value = instance_to_url(value)
         if isinstance(value, [].__class__):
-            value = [instance_to_url(subitem) for subitem in value]
-            #goodstuff[key] = [instance_to_url(subitem) for subitem in value]
+            value = url_for('.relation_summary',
+                            model=API_REVERSE_MAP[obj.__class__],
+                            pk=obj.id, relation=key)
         if attrib_filter and not key in attrib_filter:
             continue
         goodstuff[key] = value
@@ -154,14 +154,34 @@ def api_auth(instance):
     return False
 
 ## Views
+@rest.route('/db/<model>/<pk>/<relation>', methods=['GET'])
+def relation_summary(model, pk, relation):
+    if not g.user: abort(403)
+    if not model in API_MODEL_MAP:
+        abort(403)
+    Model = API_MODEL_MAP[model]
+    if not Model in STRING_KEYED_MODELS:
+        pk = int(pk)
+    inst = API_MODEL_MAP[model].query.get(pk)
+    if not inst:
+        abort(404)
+    if not api_auth(inst):
+        abort(403)
+    if hasattr(inst, relation):
+        if isinstance(getattr(inst, relation), [].__class__):
+            flat_list = [instance_to_url(inst) for inst in getattr(inst, relation)]
+            return jsonify({'count': len(flat_list),
+                            'object_list': flat_list})
+    return abort(404)
 
 @rest.route('/db/<model>/<pk>', methods=['GET', 'PUT', 'DELETE'])
 def model_instance(model, pk):
+    if not g.user: abort(403)
     if not model in API_MODEL_MAP:
         abort(403)
     Model = API_MODEL_MAP[model]
     if not Model in STRING_KEYED_MODELS: 
-        id = int(pk)
+        pk = int(pk)
     inst = API_MODEL_MAP[model].query.get(pk)
     if not inst:
         abort(404)
@@ -184,26 +204,21 @@ def model_instance(model, pk):
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
         db.session.commit()
-    #if isinstance(inst, Subject):
-    #    dicom_subject = DicomSubject.query.filter_by(name=inst.name).first()
-    #    inst.data = Series.query.filter_by(subject=dicom_subject).all()
-    #if isinstance(inst, Session):
-    #    dicom_subject = DicomSubject.query.filter_by(name=inst.subject.name).first()
-    #    inst.data = Series.query.filter_by(subject=dicom_subject).filter_by(date=inst.start).all()
     return jsonify(flatten(inst))
 
 @rest.route('/db/<model>', methods=['GET', 'POST'])
 def model_summary(model):
+    if not g.user: abort(403)
     if not model in API_MODEL_MAP:
         abort(403)
     Model = API_MODEL_MAP[model]
     if request.method == 'POST':
-        inst = Model()
-        for key, value in request.json.iteritems():
-            inst.__setattr__(key, value)
         if not g.user.is_superuser():
             if not Model in USER_CREATABLE_MODELS:
                 abort(403)
+        inst = Model()
+        for key, value in request.json.iteritems():
+            inst.__setattr__(key, value)
         if not api_auth(inst):
             abort(403)
         db.session.add(inst)
@@ -212,7 +227,7 @@ def model_summary(model):
     if Model in NO_SUMMARY_ALLOWED:
         abort(403)
     inst_list = filter(api_auth, Model.query.all())
-    flat_list = [flatten(inst, attrib_filter=['url']) for inst in inst_list]
+    flat_list = [instance_to_url(inst) for inst in inst_list]
     return jsonify({'model': model, 'count': len(flat_list), 'object_list': flat_list})
 
 @rest.route('/user')

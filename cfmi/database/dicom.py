@@ -39,7 +39,7 @@ class Series(db.Model):
     program_name = db.Column(db.String(64))
 
     subject = db.relationship(
-        DicomSubject, backref=db.backref('series_list', order_by=date))
+        DicomSubject, backref=db.backref('series', order_by=date))
 
     def __repr__(self):
         return "<DicomSeries: {0}".format(self.id)
