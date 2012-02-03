@@ -37,13 +37,19 @@ API_MODEL_EQ = {'pi': 'user'}
 ## Used to decide when not to convert to int for fetching by pk
 STRING_KEYED_MODELS = [Series, DicomSubject]
 
-## No summary allowed on these Models due to performance concerns.
-NO_SUMMARY_ALLOWED = [Series]
+## No summary allowed on these Models because the dicom database is
+## slow. Series are most usefully accessed via their relation to
+## Session objects and no one really needst to access DicomSubject.
+NO_SUMMARY_ALLOWED = [Series, DicomSubject]
 
 ## Authorization
 USER_CREATABLE_MODELS = [Session, Subject, Project, Problem]
-USER_EDITABLE_MODELS = [User, Project, Problem, Subject]
+USER_EDITABLE_MODELS = [User, Project, Problem] # How to avoid price change?
 USER_DEL_MODELS = [Problem]
+
+# We cannot, cannot, CANNOT modify the DICOM database. This is
+# enforced by database perms, but lets not think about this, eh?
+IMMUTABLE_MODELS = [Series, DicomSubject]
 
 ## Flask Hooks
 @rest.before_request
@@ -63,7 +69,7 @@ def instance_to_url(modstr_or_inst, pk=None):
     url = url_for('.model_instance',
                          model=model, pk=pk)
     if url.startswith('http://'):
-        ## url_for returns relative url for the first mountpoint of
+        ## urlfor_ returns relative url for the first mountpoint of
         ## the blueprint and absolute url of the first mountpoint for
         ## subsequent mounts. We're using this for ajax so we need the
         ## api mounted at all subdomains... truncating the absolute
@@ -98,9 +104,8 @@ def flatten(obj, attrib_filter=None):
             ## The field is a foreign keyed object, replace with url
             value = instance_to_url(value)
         if isinstance(value, [].__class__):
-            value = url_for('.relation_summary',
-                            model=API_REVERSE_MAP[obj.__class__],
-                            pk=obj.id, relation=key)
+            value = '/'.join([instance_to_url(API_REVERSE_MAP[obj.__class__],
+                            pk=obj.id), key])
         if attrib_filter and not key in attrib_filter:
             continue
         goodstuff[key] = value
@@ -119,16 +124,34 @@ def flatten(obj, attrib_filter=None):
     return goodstuff
 
 ## API Authentication
-def api_auth(instance):
+def api_auth(instance, mode='read'):
+    ## Check if the Model is read-only
+    if mode is not 'read':
+        if instance.__class__ in IMMUTABLE_MODELS:
+            return False
     if g.user.is_superuser():
         return True
+    ## Check if this operation is allowed by users
+    if mode == 'create' and Model not in USER_CREATABLE_MODELS or \
+            mode == 'edit' and Model not in USER_EDITABLE_MODELS or \
+            mode == 'delete' and Model not in USER_DEL_MODELS:
+        return False
+    ### Below are the specific rules for user access, they are
+    ### designed to rely on duck-typing to 'guess-out' how to auth new
+    ### objects. Best to check these rules when adding / designing new
+    ### classes
+
     ## Series-like object (converted to DicomSubject)
     if hasattr(instance, 'study_id'):
         instance = instance.subject
-    ## DicomSubject-like objects (converted to Subject)
+    ## DicomSubject-like objects (converted to Session)
     if isinstance(instance, DicomSubject):
-        if instance.name in g.user.get_subjects():
-            return True
+        if not len(instance.series) or not instance.series[0].date:
+            # No data (invalid subj) or no date to auth via session
+            return False
+        first_series = instance.series[0]
+        instance = Session.query.filter(
+            first_series.date>=Session.start).filter(first_series.date<=Session.end).first()
     ## Subject, Invoice, Session-like objects
     if hasattr(instance, 'project'):
         instance = instance.project
@@ -155,6 +178,7 @@ def api_auth(instance):
 
 ## Views
 @rest.route('/db/<model>/<pk>/<relation>', methods=['GET'])
+@login_required
 def relation_summary(model, pk, relation):
     if not g.user: abort(403)
     if not model in API_MODEL_MAP:
@@ -175,6 +199,7 @@ def relation_summary(model, pk, relation):
     return abort(404)
 
 @rest.route('/db/<model>/<pk>', methods=['GET', 'PUT', 'DELETE'])
+@login_required
 def model_instance(model, pk):
     if not g.user: abort(403)
     if not model in API_MODEL_MAP:
@@ -188,42 +213,34 @@ def model_instance(model, pk):
     if not api_auth(inst):
         abort(403)
     if request.method == 'DELETE':
-        if not g.user.is_superuser(): 
-            if not Model in USER_DEL_MODELS:
-                abort(403)
+        if not api_auth(inst, mode='delete'):
+            abort(403)
         db.session.delete(inst)
         db.session.commit()
     if request.method == 'PUT':
-        if not inst:
-            abort(404)
-        if not api_auth(inst):
+        if not api_auth(inst, mode='edit'):
             abort(403)
-        if not g.user.is_superuser():
-            if not Model in USER_EDITABLE_MODELS:
-                abort(403)
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
         db.session.commit()
     return jsonify(flatten(inst))
 
 @rest.route('/db/<model>', methods=['GET', 'POST'])
+@login_required
 def model_summary(model):
     if not g.user: abort(403)
     if not model in API_MODEL_MAP:
         abort(403)
     Model = API_MODEL_MAP[model]
     if request.method == 'POST':
-        if not g.user.is_superuser():
-            if not Model in USER_CREATABLE_MODELS:
-                abort(403)
         inst = Model()
         for key, value in request.json.iteritems():
             inst.__setattr__(key, value)
-        if not api_auth(inst):
+        if not api_auth(inst, mode='create'):
             abort(403)
         db.session.add(inst)
         db.session.commit()
-        return redirect(url_for('.model_instance', model=model, pk=inst.id))
+        return redirect(instance_to_url(model, pk=inst.id))
     if Model in NO_SUMMARY_ALLOWED:
         abort(403)
     inst_list = filter(api_auth, Model.query.all())
