@@ -77,6 +77,19 @@ def instance_to_url(modstr_or_inst, pk=None):
         url = '/'+'/'.join(url.split('/')[3:])
     return url
 
+def url_to_instance(url):
+    parts = url.split('/')
+    Model = None
+    idx = None
+    for part in parts:
+        if part in API_MODEL_MAP:
+            idx = parts.index(part)
+            Model = API_MODEL_MAP[part]
+            break
+    pk = parts[idx+1] if idx else None
+    inst = Model.query.get(pk) if Model and pk else None
+    return inst
+
 def flatten(obj, attrib_filter=None):  
     extra = [(thing, getattr(obj, thing)) for thing in dir(obj)]
     for key, value in extra:
@@ -177,7 +190,7 @@ def api_auth(instance, mode='read'):
     return False
 
 ## Views
-@rest.route('/db/<model>/<pk>/<relation>', methods=['GET'])
+@rest.route('/db/<model>/<pk>/<relation>', methods=['GET', 'POST'])
 @login_required
 def relation_summary(model, pk, relation):
     if not g.user: abort(403)
@@ -189,6 +202,10 @@ def relation_summary(model, pk, relation):
     inst = API_MODEL_MAP[model].query.get(pk)
     if not inst:
         abort(404)
+    if request.method == 'POST':
+        relation_field_string = relation = '_id'
+        request.json[relation_field_string] = inst.id
+        return model_summary(model)
     if not api_auth(inst):
         abort(403)
     if hasattr(inst, relation):
