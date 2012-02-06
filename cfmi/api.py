@@ -260,7 +260,14 @@ def model_summary(model):
         return redirect(instance_to_url(model, pk=inst.id))
     if Model in NO_SUMMARY_ALLOWED:
         abort(403)
-    inst_list = filter(api_auth, Model.query.all())
+    query = Model.query
+    for arg in request.args:
+        if hasattr(Model, arg):
+            query = Model.query.filter(eval(Model.__name__+'.'+arg).contains(request.args[arg])
+        else:
+            ## They've filtered on a non-existant attr, return no hits
+            return jsonify({'model': model, 'count': 0, 'object_list': []})
+    inst_list = filter(api_auth, query.all())
     flat_list = [instance_to_url(inst) for inst in inst_list]
     return jsonify({'model': model, 'count': len(flat_list), 'object_list': flat_list})
 
