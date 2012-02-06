@@ -23,7 +23,6 @@ def flatten(obj, attrib_filter=None):
             del goodstuff[key]
         if isinstance(value, [].__class__):
             goodstuff[key] = [flatten(subitem, attrib_filter=['id','username']) for subitem in value]
-            print value
     for key, value in goodstuff.iteritems():
         if isinstance(value, datetime):
             goodstuff[key]=value.strftime("%m/%d/%Y %H:%M")
@@ -37,8 +36,10 @@ def flatten(obj, attrib_filter=None):
 
 def parse_filename(filename):
     exten_depth = 1
-    if filename.split(".")[-2] == "nii":
-        exten_depth = 2
+    if 'nii' in filename.split("."):
+        exten_depth += 1
+    if 'bz2' in filename.split("."):
+        exten_depth += 1
     subject = '.'.join(filename.split(".")[:-exten_depth])
     exten = ".".join(filename.split(".")[-exten_depth:])
     return subject, exten
@@ -52,7 +53,6 @@ def make_archive(filename):
     r = find_series_or_404(subject)
     valid_formats = ['tar', 'zip', 'tar.bz2']
     valid_formats += [".".join(["nii", format]) for format in valid_formats]
-    # Default to raw+bz2 if we have an out of spec extension
     exten = exten if exten in valid_formats else abort(403)
     os.mknod(lockpath, 0660)
     script_path = '/'.join([current_app.config['BASE_PATH'], 

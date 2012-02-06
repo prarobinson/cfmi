@@ -16,7 +16,7 @@ class DicomSubject(db.Model):
             DicomSubject.name==self.name).all()
         series_list = []
         for subject in all_synonyms:
-            series_list += subject.series_list
+            series_list += subject.series
         return [[series.id, 
                  series.date.strftime(
                     "%Y/%m/%d")] for series in series_list]
