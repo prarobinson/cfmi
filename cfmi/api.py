@@ -263,7 +263,7 @@ def model_summary(model):
     query = Model.query
     for arg in request.args:
         if hasattr(Model, arg):
-            query = Model.query.filter(eval(Model.__name__+'.'+arg).contains(request.args[arg])
+            query = Model.query.filter(getattr(Model, arg)==request.args[arg])
         else:
             ## They've filtered on a non-existant attr, return no hits
             return jsonify({'model': model, 'count': 0, 'object_list': []})
