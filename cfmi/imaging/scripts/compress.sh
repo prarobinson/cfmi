@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 
 args=("$@")
 SUBJECT=$1
@@ -23,7 +23,7 @@ else
     for imgpath in ${PATHS[*]}; do
         firstrawdir=`ls ${imgpath} | head -1`
         firstrawfile=`ls ${imgpath}/${firstrawdir}/ | head -1`
-        names=(`strings ${imgpath}/${firstrawdir}/${firstrawfile} | grep tProtocolName | awk -F'=' '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g' | sed 's/,///g'`)
+        names=(`strings ${imgpath}/${firstrawdir}/${firstrawfile} | grep tProtocolName | awk -F= '{print $2}' | sed 's/"//g' | sed 's/ //g' | sed 's/+/_/g' | sed 's/\///g' | sed 's/,//g'`)
         # this returns the penultimate element in ${names[*]}; why did I want to do this?? This is a tricky thing to do, so I can only imagine I had a good reason for it :/
         rootname=${names[${#names[*]}-1]}
         
