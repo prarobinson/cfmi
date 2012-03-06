@@ -50,7 +50,6 @@ def make_archive(filename):
     if exists(lockpath):
         return False
     subject, exten = parse_filename(filename)
-    r = find_series_or_404(subject)
     valid_formats = ['tar', 'zip', 'tar.bz2']
     valid_formats += [".".join(["nii", format]) for format in valid_formats]
     exten = exten if exten in valid_formats else abort(403)
