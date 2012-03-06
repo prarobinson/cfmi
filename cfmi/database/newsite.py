@@ -1,6 +1,6 @@
 from cfmi import db
 
-from cfmi.database.dicom import Series
+from cfmi.database.dicom import Series, DicomSubject
 
 users_assoc_table = db.Table(
     'Projects2Users', db.Model.metadata,
@@ -96,6 +96,10 @@ class Subject(db.Model):
 
     def get_series(self):
         series = [series for session in self.sessions for series in session.series]
+        if not series:
+            print "Session search failed, failing back to string search"
+            print self.sessions
+            series = Series.query.join(DicomSubject).filter(DicomSubject.name==self.name).all()
         return series
 
 class Session(db.Model):
@@ -139,13 +143,7 @@ class Session(db.Model):
         series = Series.query.filter(Series.date>=self.start).filter(
             Series.date<=self.end).order_by(Series.date).first()
         if not series:
-            return []
-        #via_stu = Series.query.filter(Series.study_id==series.study_id).all()
-        #via_date = Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all()
-        #if not len(via_stu) == len(via_date):
-        #    print "BONK: Study algoritm vs. time interval: {} to {}".format(len(via_stu), len(via_date))
-        #    print [series.subject for series in via_stu], "\n"
-        #    print [series.subject for series in via_date]
+                return []
         return Series.query.filter(Series.study_id==series.study_id).all()
 
 class Problem(db.Model):
