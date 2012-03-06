@@ -2,10 +2,8 @@ from flask import (Blueprint, jsonify, abort, request)
 
 from cfmi.auth import (
     login_required, authorized_users_only, superuser_only)
-from cfmi.database.dicom import (Series, DicomSubject)
+from cfmi.database.dicom import (Series)
 from cfmi.database.newsite import Project, User, Subject 
-
-from cfmi.utils import find_series_or_404
 
 api = Blueprint('imaging_api', __name__, static_folder='static',
                 template_folder='templates')
@@ -19,8 +17,10 @@ def get_path(subject):
     filtering
    
     """
-    r = find_series_or_404(subject)
-    return "\n".join([series.get_path() for series in r])
+    subj = Subject.query.filter(Subject.name==subject).first()
+    if not subj:
+        abort(404)
+    return "\n".join([series.get_path() for series in subj.get_series()])
 
 @api.route('/id/<subject>')
 def get_id(subject):
@@ -31,8 +31,10 @@ def get_id(subject):
     filtering
 
     """
-    r = find_series_or_404(subject)
-    return "\n".join([series.id for series in r])
+    subj = Subject.query.filter(Subject.name==subject).first()
+    if not subj:
+        abort(404)
+    return "\n".join([series.id for series in subj.get_series()])
 
 @api.route('/info/<series_id>')
 def get_info(series_id):
@@ -43,19 +45,16 @@ def get_info(series_id):
 @api.route('/project/<project_id>')
 @login_required
 def project(project_id):
-    proj = Project.query.get(project_id)
-    if not proj:
-        abort(404)
+    proj = Project.query.get_or_404(project_id)
     return jsonify(name=proj.name, id=proj.id, shortname=proj.shortname(), 
-                   subjects=proj.get_subjects())
+                   subjects=[subject.name for subject in proj.subjects])
 
 @api.route('/subject/<subject>')
 @authorized_users_only
 def subject(subject):
-    subj = DicomSubject.query.filter(DicomSubject.name==subject).first()
-    if not subj:
-        abort(404)
-    return jsonify(name=subj.name, series=subj.get_all_series())
+    subj = Subject.query.filter(Subject.name==subject).first()
+    return jsonify(name=subject, series=[[series.id, series.date.strftime(
+                    "%Y/%m/%d")] for series in subj.get_series()])
 
 @api.route('/series/<series_id>')
 @authorized_users_only

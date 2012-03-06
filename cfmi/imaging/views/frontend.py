@@ -4,7 +4,7 @@ from flask import (Blueprint, send_file as flask_send_file, render_template,
                    request)
 
 from cfmi.auth import (login_required, authorized_users_only)
-from cfmi.utils import (make_archive, find_series_or_404, get_archive_path)
+from cfmi.utils import (make_archive, get_archive_path)
 
 frontend = Blueprint('imaging', __name__, static_folder="../static",
                      template_folder='../templates')

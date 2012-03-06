@@ -9,8 +9,8 @@ from decimal import Decimal
 from flask import (render_template, abort, request, g, url_for,
                    current_app)
 
-from cfmi.database.dicom import Series, DicomSubject 
-from cfmi.database.newsite import (User, Project, Session, Invoice, Problem)
+from cfmi.database.dicom import Series, DicomSubject
+from cfmi.database.newsite import (User, Project, Session, Invoice, Problem, Subject)
 
 def flatten(obj, attrib_filter=None):
     goodstuff = copy(obj.__dict__)
@@ -63,30 +63,3 @@ def make_archive(filename):
 
 def get_archive_path(filename):
     return current_app.config['DICOM_ARCHIVE_FOLDER']+filename
-
-def find_series_or_404(subject):
-    """ find_series_or_404
-
-    Returns a query object with filtered for subject and optional
-    'program' and 'date' passed as GET args in the current request
-
-    find_series_or_404() will 404 if the subject is not found, but
-    return an empty query object if the subjects exists and the series
-    are filtered out
-    
-    """
-    r = Series.query.join(DicomSubject).filter(
-        DicomSubject.name==subject)
-    if not r.all():
-        abort(404)
-    if 'program' in request.args:
-        r = r.filter(
-            Series.program_name.contains(request.args['program']))
-    if 'date' in request.args:
-        year, month, day = request.args['date'].split('-')
-        bot = date(int(year), int(month), int(day))
-        oneday = timedelta(days=1)
-        top = bot + oneday
-        r = r.filter(Series.date<top).filter(Series.date>bot)
-    return r
-

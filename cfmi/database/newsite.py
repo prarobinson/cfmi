@@ -72,9 +72,6 @@ class Project(db.Model):
             return self.name
         return self.name[:limit-3]+"..."
 
-    def get_subjects(self):
-        return [subject.name for subject in self.subjects]
-
     def auth(self, user):
         if user.is_superuser():
             return True
@@ -91,15 +88,15 @@ class Subject(db.Model):
     project = db.relationship(Project, backref=db.backref(
             'subjects', order_by=name))
 
-    def __init__(*args, **kwargs):
-        self.dicomsubject_id = DicomSubject.query.filter_by(name=self.name).first().id
-        db.Model.__init__(*args, **kwargs)
-
     def __repr__(self):
         return self.name
 
     def auth(self, user):
         return self.project.auth(user)
+
+    def get_series(self):
+        series = [series for session in self.sessions for series in session.series]
+        return series
 
 class Session(db.Model):
     __tablename__ = 'billing_sessions'
