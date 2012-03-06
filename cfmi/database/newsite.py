@@ -95,11 +95,11 @@ class Subject(db.Model):
         return self.project.auth(user)
 
     def get_series(self):
-        series = [series for session in self.sessions for series in session.series]
-        if not series:
-            print "Session search failed, failing back to string search"
-            print self.sessions
+        if not len(self.sessions):
+            print "Subject has no sessions, trying a string search"
             series = Series.query.join(DicomSubject).filter(DicomSubject.name==self.name).all()
+        else:
+            series = [series for session in self.sessions for series in session.series]
         return series
 
 class Session(db.Model):
@@ -136,14 +136,22 @@ class Session(db.Model):
 
     @property
     def series(self):
-        if self.cancelled or not self.start:
-            return None
+        if self.cancelled:
+            return []
         if not self.end:
             self.end = self.sched_end
+        if not self.start and self.sched_start < datetime.today():
+            self.start = self.sched_start
         series = Series.query.filter(Series.date>=self.start).filter(
             Series.date<=self.end).order_by(Series.date).first()
         if not series:
+            print "Session has no series in interval: {}. Expanding search to 24hrs.".format(self)
+            r = [series for series in Series.query.join(DicomSubject).filter(
+                    DicomSubject.name==self.subject.name) if series.date.date()==self.start.date()]
+            if not r:
                 return []
+            series = r[0]
+            print "Found >{} hits for {}".format(len(r), self) 
         return Series.query.filter(Series.study_id==series.study_id).all()
 
 class Problem(db.Model):
