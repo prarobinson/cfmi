@@ -26,7 +26,7 @@ class DicomSubject(db.Model):
                     "%Y/%m/%d")] for series in self.series_list]
 
     def __repr__(self):
-        return "<DicomDicomSubject: {0}".format(self.name)
+        return "<DicomSubject: {0}>".format(self.name)
 
 class Series(db.Model):
     __bind_key__ = 'dicom'

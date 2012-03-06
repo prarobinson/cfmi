@@ -132,9 +132,21 @@ class Session(db.Model):
 
     @property
     def series(self):
-        if not self.start:
+        if self.cancelled or not self.start:
             return None
-        return Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all() 
+        if not self.end:
+            self.end = self.sched_end
+        series = Series.query.filter(Series.date>=self.start).filter(
+            Series.date<=self.end).order_by(Series.date).first()
+        if not series:
+            return []
+        #via_stu = Series.query.filter(Series.study_id==series.study_id).all()
+        #via_date = Series.query.filter(Series.date>=self.start).filter(Series.date<=self.end).all()
+        #if not len(via_stu) == len(via_date):
+        #    print "BONK: Study algoritm vs. time interval: {} to {}".format(len(via_stu), len(via_date))
+        #    print [series.subject for series in via_stu], "\n"
+        #    print [series.subject for series in via_date]
+        return Series.query.filter(Series.study_id==series.study_id).all()
 
 class Problem(db.Model):
     __tablename__='Problems'
