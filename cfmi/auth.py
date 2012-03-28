@@ -20,6 +20,7 @@ def ldap_init():
     ipa = ldap.initialize(current_app.config['LDAP_URI'])
     ipa.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
     ipa.set_option(ldap.OPT_X_TLS,ldap.OPT_X_TLS_DEMAND)
+    ipa.set_option(ldap.OPT_NETWORK_TIMEOUT,3)
     ipa.start_tls_s()
     return ipa
 
@@ -58,21 +59,22 @@ def ldap_admin_set_password(uname, password):
 
 def user_auth(user, passwd):
     uname = user.username
+    nis_success = False
+    ldap_success = False
     try:
         ldap_success = current_app.config['USE_LDAP_AUTH'] and ldap_auth(uname, passwd)
-        nis_success = False
-        if not ldap_success:
-            nis_success = current_app.config['USE_NIS_AUTH'] and nis_auth(uname, passwd)
     except ldap.SERVER_DOWN:
         ldap_success = False
         print 'Error: Can\'t contact LDAP server'
+    try:
+        nis_success = current_app.config['USE_NIS_AUTH'] and nis_auth(uname, passwd)
     except nis.error as e:
         print 'NIS Error: {}'.format(e)
         nis_success = False
     
-    if current_app.config['LDAP_MIGRATE_FROM_NIS']:
-        if not ldap_success and nis_success:
-            ldap_admin_set_password(uname, passwd)
+    #if current_app.config['LDAP_MIGRATE_FROM_NIS']:
+    #    if not ldap_success and nis_success:
+    #        ldap_admin_set_password(uname, passwd)
             
     print 'User {} LDAP Login: {}'.format(uname, ldap_success)
     print 'User {} NIS Login: {}'.format(uname, nis_success)
