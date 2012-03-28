@@ -5,16 +5,20 @@
 
 {% block content %}
 
-<div id="user-left" class="span-12">
+<div class="row">
+  <div id="user-left" class="span6">
   <div class="contentbox">
     <h1>Unpaid Invoices</h1>
     <div class="subcontent">
-      <table>
+      <table class="table table-condensed">
+	<thead>
         <tr>
           <th>Date</th>
           <th>Project</th>
           <th>Cost</th>
         </tr>
+	</thead>
+	<tbody>
         {% for invoice in unpaid %}
         <tr>
           <td><a href="{{ url_for('billing.invoice', invoice_id=invoice.id) }}">
@@ -23,6 +27,7 @@
           <td>{{ invoice.total() }}</td>
         </tr>
         {% endfor %}
+	</tbody>
       </table>
     </div>
   </div>
@@ -34,26 +39,31 @@
     </div>
   </div>
   {% endif %}
-</div>
+  </div>
 
-<div id="user-right" class="span-12 last">
-  <div class="contentbox">
-    <h1>Recent Sessions</h1>
-    <div class="subcontent">
-      <table>
-        <tr>
-          <th>Date</th>
-          <th>Scheduled By</th>
-          <th>Duration</th>
-        </tr>
-        {% for scan in recent %}
-        <tr>
-          <td>{{ render_session(scan) }}</td>
-          <td>{{ print_user(scan.user) }}</td>
-          <td>{{ scan.dur_hours() }} hrs.</td>
-        </tr>
-        {% endfor %}
-      </table>
+  <div id="user-right" class="span6">
+    <div class="contentbox">
+      <h1>Recent Sessions</h1>
+      <div class="subcontent">
+	<table class="table table-condensed">
+	  <thead>
+          <tr>
+            <th>Date</th>
+            <th>Scheduled By</th>
+            <th>Duration</th>
+          </tr>
+	  </thead>
+	  <tbody>
+          {% for scan in recent %}
+          <tr>
+            <td>{{ render_session(scan) }}</td>
+            <td>{{ print_user(scan.user) }}</td>
+            <td>{{ scan.dur_hours() }} hrs.</td>
+          </tr>
+          {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
 </div>

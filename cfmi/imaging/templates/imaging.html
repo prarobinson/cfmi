@@ -7,18 +7,14 @@
 {% block name %}Imaging{% endblock %}
 
 {% block nav %}
-<div id="nav" class="span-24 last">
-  <a id="nav_2" href="{{ url_for('homepage.index') }}">Home</a>
-   <a id="nav_1" href="{{ url_for('imaging.index') }}">Imaging</a>
-  <a id="nav_3" href="https://cfmi.georgetown.edu/secured/">Scheduling</a>
-  <a id="nav_4" href="{{ url_for('billing.index') }}">Billing</a>
-  <a id="nav_5" href="{{ url_for('auth.logout') }}">Logout</a>
-</div> <!-- -End of #nav -->
+	<li class="active"><a href="{{ url_for('imaging.index') }}">Imaging</a></li>
+	<li><a href="https://cfmi.georgetown.edu/secured/">Scheduling</a></li>
+	<li><a href="{{ url_for('billing.index') }}">Billing</a></li>
 {% endblock %}
 
 {% block content %}
-<div class="span-12">
-  <div id="projects" class="contentbox">
+<div class="row">
+  <div id="projects" class="span6 contentbox">
     <h1>Projects</h1>
     <div class="subcontent">
       <dl>
@@ -34,21 +30,22 @@
       </dl>
     </div>
   </div>
-</div>
-<div id="subject_container" class="span-12 last">
-  <div id="series_detail" class="contentbox">
-    <h1>Series Detail</h1>
-    <div class="subcontent">
-      <p>Date: <span id="date"></span></p>
-      <p>Program: <span id="program"></span></p>
+  <div id="subject_container" class="span6">
+    
+    <div id="subject_detail" class="contentbox">
+      <h1>Subject Detail</h1>
+      <div class="subcontent">
+	<p>Name: <span id="subject_name"></span></p>
+	<p><span id="subject_download"></span></p>
+	<div id="subject_series">
+	</div>
+      </div>
     </div>
-  </div>
-  <div id="subject_detail" class="contentbox">
-    <h1>Subject Detail</h1>
-    <div class="subcontent">
-      <p>Name: <span id="subject_name"></span></p>
-      <p><span id="subject_download"></span></p>
-      <div id="subject_series">
+    <div id="series_detail" class="contentbox">
+      <h1>Series Detail</h1>
+      <div class="subcontent">
+	<p>Date: <span id="date"></span></p>
+	<p>Program: <span id="program"></span></p>
       </div>
     </div>
   </div>

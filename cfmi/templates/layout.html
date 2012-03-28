@@ -22,7 +22,9 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename="favicon.ico") }}">
 
   <!-- CSS: implied media="all" -->
+  <link rel="stylesheet" href="{{ url_for('static', filename="css/bootstrap.min.css") }}?v=2">
   <link rel="stylesheet" href="{{ url_for('static', filename="css/style.css") }}?v=2">
+
   {% block header %}
   {% endblock %}
   <link href='https://fonts.googleapis.com/css?family=Cardo' rel='stylesheet' type='text/css'>
@@ -37,25 +39,30 @@
 
 <body>
 
-  <div id="container" class="container">
+  <div class="container">
     <header>
       <h1>{% block name %}CFMI{% endblock %}</h1>
       <img src="{{ url_for('static', filename="titlebar.png") }}" />
-      {% block nav %}
-      <div id="nav" class="span-24 last">
-        <a id="nav_1" href="{{ url_for('homepage.index') }}">Home</a>
-        <a id="nav_2" href="{{ url_for('imaging.index') }}">Imaging</a>
-	<a id="nav_3" href="https://cfmi.georgetown.edu/secured/">Scheduling</a>
-        <a id="nav_4" href="{{ url_for('billing.index') }}">Billing</a>
-        <a id="nav_5" href="{{ url_for('auth.logout') }}">Logout</a>
-      </div> <!-- -End of #nav -->
-      {% endblock %}
+      <div class="navbar">
+	<div class="navbar-inner">
+	  <div class="container">
+	    <ul class="nav">
+	      <li><a href="{{ url_for('homepage.index') }}">Home</a></li>
+	      {% block nav %}
+	      <li><a href="{{ url_for('homepage.index') }}">Home</a></li>
+	      <li class="active"><a href="{{ url_for('imaging.index') }}">Imaging</a></li>
+	      <li><a href="https://cfmi.georgetown.edu/secured/">Scheduling</a></li>
+	      <li><a href="{{ url_for('billing.index') }}">Billing</a></li>
+	      {% endblock %}
+	      <li class="pull-right"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+	    </ul>
+	  </div>
+	</div>
+      </div>
     </header>
-    <div id="main" role="main">
-      <div id="messages"></div>
-      {% block content %}
-      {% endblock %}
-    </div> <!-- end of #main -->
+    <div id="messages"></div>
+    {% block content %}
+    {% endblock %}
     <footer>
       
     </footer>
@@ -92,14 +99,5 @@
     <script>DD_belatedPNG.fix("img, .png_bg"); // Fix any <img> or .png_bg bg-images. Also, please read goo.gl/mZiyb </script>
   <![endif]-->
 
-
-  <!-- mathiasbynens.be/notes/async-analytics-snippet Change UA-XXXXX-X to be your site's ID
-  <script>
-    var _gaq=[["_setAccount","UA-XXXXX-X"],["_trackPageview"]];
-    (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.async=1;
-    g.src=("https:"==location.protocol?"//ssl":"//www")+".google-analytics.com/ga.js";
-    s.parentNode.insertBefore(g,s)}(document,"script"));
-  </script>
-  -->
 </body>
 </html>

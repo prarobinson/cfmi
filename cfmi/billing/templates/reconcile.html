@@ -3,30 +3,41 @@
 
 {% block title %}Reconcile{% endblock %}
 
+{% block nav %}
+  <li><a href="{{ url_for('billing.index') }}">Browse</a></li>
+  <li class="active"><a href="{{ url_for('billing.reconcile') }}">Reconcile</a></li>
+  <li><a href="{{ url_for('billing.statistics') }}">Statistics</a></li>
+  <li><a href="{{ url_for('billing.batch') }}">Batch</a></li>
+{% endblock %}
+
 {% block content %}
 <div class="contentbox">
   <h1>Outstanding Invoices</h1>
   <div class="subcontent">
-    <table>
+    <table class="table table-condensed">
+      <thead>
       <tr>
         <th>Project:</th>
         <th>Invoice Date:</th>
         <th>PI:</th>
         <th>Actions:</th>
       </tr>
+      </thead>
+      <tbody>
       {% for inv in invoice_list %}
       <tr id="{{ inv.id }}">
         <td>{{ inv.project.shortname(65) }}</td>
         <td>{{ inv.date.strftime("%b %Y") }}</td>
         <td>{{ print_user(inv.project.pi) }}</td>
         <td>
-          <a class="inv_link button" href="/invoice/{{ inv.id }}/">View</a>
-          <a class="inv_link button" href="/invoice/{{ inv.id }}/delete">Delete</a>
-          <a class="inv_link button" href="/invoice/{{ inv.id }}/notify">Notify</a>
-          <a class="inv_link button" href="/invoice/{{ inv.id }}/paid">Paid</a>
+          <a class="btn btn-mini btn-primary" href="/invoice/{{ inv.id }}/">View</a>
+          <a class="btn btn-mini btn-danger" href="/invoice/{{ inv.id }}/delete">Delete</a>
+          <a class="btn btn-mini btn-warning" href="/invoice/{{ inv.id }}/notify">Notify</a>
+          <a class="btn btn-mini btn-success" href="/invoice/{{ inv.id }}/paid">Paid</a>
         </td>
       </tr>
       {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>

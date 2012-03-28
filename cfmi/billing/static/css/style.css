@@ -5,8 +5,11 @@
  */
 
 th {
-    font-weight:bold;
     text-align:left;
+}
+
+table {
+    width: 100%;
 }
 
 .ui-datepicker-calendar {
@@ -23,13 +26,13 @@ th {
     list-style-type:none;
 }
 
-.contentbox {
-    float:left;
-}
-
 .contentbox p {
     font-size:large;
     margin:0;
+}
+
+.contentbox h1 {
+    font-size: large;
 }
 
 .subcontent {

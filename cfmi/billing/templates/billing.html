@@ -10,25 +10,13 @@
 
 {% block nav %}
 {% if g.user and g.user.is_superuser() %}
-<div id="nav" class="span-24 last">
-  <a id="nav_1" href="{{ url_for('homepage.index') }}">Home</a>
-  <a id="nav_2" href="{{ url_for('billing.index') }}">Browse</a>
-  <a id="nav_3" href="{{ url_for('billing.reconcile') }}">Reconcile</a>
-  <a id="nav_4" href="{{ url_for('billing.batch') }}">Batch</a>
-  <a id="nav_5" href="{{ url_for('auth.logout') }}">Logout</a>
-</div> <!-- -End of #nav -->
+  <li class="active"><a href="{{ url_for('billing.index') }}">Browse</a></li>
+  <li><a href="{{ url_for('billing.reconcile') }}">Reconcile</a></li>
+  <li><a href="{{ url_for('billing.statistics') }}">Statistics</a></li>
+  <li><a href="{{ url_for('billing.batch') }}">Batch</a></li>
 {% else %}
-<div id="nav" class="span-24 last">
-  <a id="browse" href="{{ url_for('billing.user_portal') }}">Portal</a>
-  <a id="reconcile" href=""></a>
-  <a id="stats" href="{{ url_for('billing.statistics') }}">Statistics</a>
-  <a id="batch" href="/batch"></a>
-  {% if not g.user %}
-  <a id="home" href="http://cfmi.georgetown.edu/">Home</a>
-  {% else %}
-  <a id="home" href="{{ url_for('auth.logout') }}">Logout</a>
-  {% endif %}
-</div> <!-- end of alternate #nav -->
+  <li class="active"><a id="browse" href="{{ url_for('billing.user_portal') }}">Portal</a></li>
+  <li><a id="stats" href="{{ url_for('billing.statistics') }}">Statistics</a></li>
 {% endif %}
 {% endblock %}
 

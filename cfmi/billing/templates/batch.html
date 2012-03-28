@@ -3,21 +3,17 @@
 {% block title %}Batch Opertations{% endblock %}
 
 {% block content %}
-<div class="span-6 invisible">spacer</div>
-<div class="span-12 last">
-  <div class="contentbox batchform">
-    <h1>Batch Operations</h1>
-    <div class="subcontentbox">
+<div class="contentbox batchform">
+  <h1>Batch Operations</h1>
+  <div class="subcontentbox">
     <p><label>Select month:</label><input type="text" id="invdatepicker" />
-    <input type="button" id="gen_inv" value="Generate Invoices" />
-    <input type="button" id="gen_report" value="Generate Report" /></p>
+      <input type="button" id="gen_inv" value="Generate Invoices" />
+      <input type="button" id="gen_report" value="Generate Report" /></p>
     <hr />
-    <p><input type="button" id="gen_stat" value="Trigger Statistics
-    Update" /></p>
+    <p><input type="button" id="gen_stat" value="Trigger Statistics Update" /></p>
     <hr />
     <p><label>Spoof user:</label><input id="spoof_target" type="text"/>
-    <input type="button" id="spoof_user" value="Login" /></p>
-    </div>
+      <input type="button" id="spoof_user" value="Login" /></p>
+  </div>
 </div>
-
 {% endblock %}

@@ -20,14 +20,14 @@ function update_subject_detail (data) {
     out += "</ol></p>";
     $("#subject_series").html(out);
     $("#subject_download").html(
-	'<form id="download_form"><ul id="dl_options"><li><label>Format:</label>' +
-	    '<input type="radio" name="format" value="nii">nii</input>' +
-	    '<input type="radio" name="format" value="raw" checked="yes">raw</input></li>' +
-	    '<li><label>Compression:</label>' +
-	    '<input type="radio" name="compress" value="tar">tar</input>' +
-	    '<input type="radio" name="compress" value="tar.bz2" checked="yes">bz2</input>' +
-	    '<input type="radio" name="compress" value="zip">zip</input></li>' +
-	    '<li><input type="button" name="submit" value="Download"></li></ul>');
+	'<form id="download_form"><div class="row"><div class="control-group span1 offset1"><label class="control-group-label">Format:</label><div class="controls">' +
+	    '<label class="radio"><input type="radio" name="format" value="nii">nii</label>' +
+	    '<label class="radio"><input type="radio" name="format" value="raw" checked="yes">raw</label></div></div>' +
+	    '<div class="control-group span1"><label class="control-group-label">Compression:</label><div class="controls">' +
+	    '<label class="radio"><input type="radio" name="compress" value="tar">tar</label>' +
+	    '<label class="radio"><input type="radio" name="compress" value="tar.bz2" checked="yes">bz2</label>' +
+	    '<label class="radio"><input type="radio" name="compress" value="zip">zip</label></div></div>' +
+	    '<div class="span1 offset1"><input class="btn" type="button" name="submit" value="Download"></div></div>');
     $("#subject_download").find("input:button").click(download);
 	     
     $("#subject_series").find("li").click(series_click);
@@ -86,7 +86,7 @@ $().ready(function () {
 		$("#project_"+project_id).find("ul").html(out);
 		$("a.subj_link").click(subject_link_click);
 	    });
-	    $("#projects").find("dd:visible").slideUp('fast');
+	    $("#projects").find("dd:visible");
 	    $(this).next().slideDown('fast');
 	    return false;
 	});

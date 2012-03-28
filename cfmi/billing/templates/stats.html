@@ -2,31 +2,44 @@
 
 {% block title %}Statistics{% endblock %}
 
+{% block nav %}
+  {% if g.user and g.user.is_superuser() %}
+  <li class="active"><a href="{{ url_for('billing.index') }}">Browse</a></li>
+  <li><a href="{{ url_for('billing.reconcile') }}">Reconcile</a></li>
+  <li><a href="{{ url_for('billing.statistics') }}">Statistics</a></li>
+  <li><a href="{{ url_for('billing.batch') }}">Batch</a></li>
+{% else %}
+  <li><a id="browse" href="{{ url_for('billing.user_portal') }}">Portal</a></li>
+  <li class="active"><a id="stats" href="{{ url_for('billing.statistics') }}">Statistics</a></li>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 
-<div id="stat_left" class="span-12">
-  <div id="stat_rev" class="contentbox">
-    <h1>Revenue</h1>
-    <div class="subcontent">
-      <p>Fiscal Year to Date: <span class="return-link">{{ ytd }}</span></p>
-      <p>Last Year: <span class="return-link">{{ lastyear }}</span></p>
-      <hr />
-      <p>Last Month: <span class="return-link">{{ lastmonth }}</span></p>
+<div class="row">
+  <div id="stat_left" class="span6">
+    <div id="stat_rev" class="contentbox">
+      <h1>Revenue</h1>
+      <div class="subcontent">
+	<p>Fiscal Year to Date: <span class="return-link">{{ ytd }}</span></p>
+	<p>Last Year: <span class="return-link">{{ lastyear }}</span></p>
+	<p>Last Month: <span class="return-link">{{ lastmonth }}</span></p>
+      </div>
+    </div>
+    <div id="stat_scanner" class="contentbox">
+      <h1>Lifetime Scanner Usage</h1>
+      <div class="subcontent">
+	<p>Sessions: <span class="return-link">{{ sessions }}</span></p>
+	<p>Subjects: <span class="return-link">{{ subjects }}</span></p>
+      </div>
     </div>
   </div>
-  <div id="stat_scanner" class="contentbox">
-    <h1>Lifetime Scanner Usage</h1>
-    <div class="subcontent">
-      <p>Sessions: <span class="return-link">{{ sessions }}</span></p>
-      <p>Subjects: <span class="return-link">{{ subjects }}</span></p>
-    </div>
-  </div>
-</div>
-<div id="stat_right" class="span-12 last">
-  <div class="contentbox">
-    <h1>Monthly Revenue: Year to Date</h1>
-    <div class="subcontent">
-      <img src="{{ gchart_ytd_url }}" width="463" height="400" alt="Monthly Revenue - This Year" />
+  <div id="stat_right" class="span6">
+    <div class="contentbox">
+      <h1>Monthly Revenue: Year to Date</h1>
+      <div class="subcontent">
+	<img src="{{ gchart_ytd_url }}" width="463" height="200" alt="Monthly Revenue - This Year" />
+      </div>
     </div>
   </div>
 </div>
