@@ -4,6 +4,7 @@ args=("$@")
 SUBJECT=$1
 FILENAME=$3/$1.$2
 EXTEN=$2
+FULLEXTEN=$EXTEN
 EMAIL=$4
 TMPDIR=`mktemp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT} | sed 's_exports_glusterfs/mirror/cfmi_g'`
@@ -88,5 +89,5 @@ mv -n $FILENAME.part $FILENAME
 rm -rf $TMPDIR
 
 sed -e "s/{{ subject }}/$SUBJECT/" $TEMPLATE | \
-    sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${SUBJECT}.${EXTEN}," | \
-    mail -s "[CFMI Imaging] ${SUBJECT}.${EXTEN} is ready" -r imaging@cfmi.georgetown.edu $EMAIL
+    sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${SUBJECT}.${FULLEXTEN}," | \
+    mail -s "[CFMI Imaging] ${SUBJECT}.${FULLEXTEN} is ready" -r imaging@cfmi.georgetown.edu $EMAIL
