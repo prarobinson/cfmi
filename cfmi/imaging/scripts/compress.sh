@@ -6,7 +6,7 @@ FILENAME=$3/$1.$2
 EXTEN=$2
 FULLEXTEN=$EXTEN
 EMAIL=$4
-TMPDIR=`mktemp -d`
+TMPDIR=`mktemp --tmpdir=/cfmiweb-tmp -d`
 PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT} | sed 's_exports_glusterfs/mirror/cfmi_g'`
 TEMPLATE=$HOME/cfmi/cfmi/imaging/templates/email.tpl
 
