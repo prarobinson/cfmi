@@ -34,7 +34,7 @@ fi
 # Let's default to no .gz
 gzflag=""
 isgz="N"
-tmpdir=`mktemp -d`
+tmpdir=`mktemp --tmpdir=/cfmiweb-tmp -d`
 
 for param in $@; do
   argistype=`echo ${param} | grep "type"`
