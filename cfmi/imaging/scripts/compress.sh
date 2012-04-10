@@ -11,11 +11,11 @@ PATHS=`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${SUBJECT} | sed 
 TEMPLATE=$HOME/cfmi/cfmi/imaging/templates/email.tpl
 
 cd $TMPDIR;
-mkdir $SUBJECT
-cd $SUBJECT
+mkdir "$SUBJECT"
+cd "$SUBJECT"
 if [ ${EXTEN::3} == "nii" ]; then
-    convert.sh $SUBJECT ./ gz=FALSE > convert.log 2>&1
-    mv convert.log $SUBJECT
+    convert.sh "$SUBJECT" ./ gz=FALSE > convert.log 2>&1
+    mv convert.log "$SUBJECT"
     EXTEN=${EXTEN:4}
 else
     index=1
