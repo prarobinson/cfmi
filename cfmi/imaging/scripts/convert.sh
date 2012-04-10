@@ -57,10 +57,10 @@ which dcm2nii
 
 subjid=${1}
 outdir=${2}
-
+WEB_SUBJ=`echo $subjid | sed -e 's/ /%20/g'`
 # Get the paths and scan names for this subject, if they exist
 echo "Getting image info for ${subjid}..."
-paths=(`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${subjid} | sed 's_exports_glusterfs/mirror/cfmi_g'`)
+paths=(`curl -f -k https://imaging.cfmi.georgetown.edu/api/path/${WEB_SUBJ} | sed 's_exports_glusterfs/mirror/cfmi_g'`)
 #paths=(`wget --no-check-certificate https://imaging.cfmi.georgetown.edu/api/path/${subjid} -O -| sed 's_exports_glusterfs/mirror/cfmi_g'`)
 if [ ${#paths[0]} == 0 ]; then
   echo "No data found for subject ${subjid}...exiting"
