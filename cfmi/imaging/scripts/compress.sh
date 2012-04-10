@@ -70,23 +70,23 @@ else
 fi
 
 if [ $EXTEN == "tar" ]; then
-    tar -chf $FILENAME.part .
+    tar -chf "$FILENAME.part" .
 fi
 if [ $EXTEN == "tar.gz" ]; then
-    tar -czhf $FILENAME.part .
+    tar -czhf "$FILENAME.part" .
 fi
 if [ $EXTEN == "tar.bz2" ]; then
-    tar -cjhf $FILENAME.part .
+    tar -cjhf "$FILENAME.part" .
 fi
 if [ $EXTEN == "tar.xz" ]; then
-    tar -cJhf $FILENAME.part .
+    tar -cJhf "$FILENAME.part" .
 fi
 if [ $EXTEN == "zip" ]; then
-    rm $FILENAME.part
-    zip -r $FILENAME.part .
+    rm "$FILENAME.part"
+    zip -r "$FILENAME.part" .
 fi
 # Don't clobber in the rare case another worker has already finished
-mv -n $FILENAME.part $FILENAME
+mv -n "$FILENAME.part" "$FILENAME"
 rm -rf $TMPDIR
 
 sed -e "s/{{ subject }}/$SUBJECT/" $TEMPLATE | \
