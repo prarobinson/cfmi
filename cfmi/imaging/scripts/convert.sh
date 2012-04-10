@@ -51,7 +51,7 @@ done
 
 PATH=${PATH}:/glusterfs/mirror/apps/mricron
 
-echo ${FREESURFER_HOME}
+#echo ${FREESURFER_HOME}
 #which mri_convert
 which dcm2nii
 
@@ -208,7 +208,7 @@ else
     for k in ${modality4D[*]}; do
       firstrawdir=`ls ${paths[${k}]}/ | head -1`
       files=(`ls ${paths[${k}]}/${firstrawdir}/`)
-      is_MOCO=`strings ${paths[${k}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND.MOCO'`
+      is_MOCO=`strings ${paths[${k}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND\.MOCO'`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e "${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}" ]; then
@@ -307,7 +307,7 @@ else
     for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
       firstrawdir=`ls ${paths[${m}]}/ | head -1`
       files=(`ls ${paths[${m}]}/${firstrawdir}/`)
-      is_MOCO=`strings ${paths[${m}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND.MOCO'`
+      is_MOCO=`strings ${paths[${m}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND\.MOCO'`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e "${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}" ]; then
