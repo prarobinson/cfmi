@@ -90,5 +90,5 @@ mv -n "$FILENAME.part" "$FILENAME"
 rm -rf $TMPDIR
 
 sed -e "s/{{ subject }}/$SUBJECT/" $TEMPLATE | \
-    sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${SUBJECT}.${FULLEXTEN}," | \
+    sed -e "s,{{ url }},https://imaging.cfmi.georgetown.edu/download/${WEB_SUBJ}.${FULLEXTEN}," | \
     mail -s "[CFMI Imaging] ${SUBJECT}.${FULLEXTEN} is ready" -r imaging@cfmi.georgetown.edu $EMAIL
