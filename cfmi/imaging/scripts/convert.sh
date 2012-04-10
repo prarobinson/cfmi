@@ -49,6 +49,7 @@ for param in $@; do
   fi
 done
 
+PATH=${PATH}:/glusterfs/mirror/apps/mricron
 
 echo ${FREESURFER_HOME}
 #which mri_convert
@@ -207,7 +208,7 @@ else
     for k in ${modality4D[*]}; do
       firstrawdir=`ls ${paths[${k}]}/ | head -1`
       files=(`ls ${paths[${k}]}/${firstrawdir}/`)
-      is_MOCO=`strings ${paths[${k}]}/${firstrawdir}/${files[0]} | grep -e "ND.MOCO"`
+      is_MOCO=`strings ${paths[${k}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND.MOCO'`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag} ]; then
@@ -219,7 +220,8 @@ else
             ln -s ${paths[${k}]}/${vol}/* ${tmpdir}/${vol}.IMA
           done
           firsttmpdir=`ls ${tmpdir}/ | head -1`
-          dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/${firsttmpdir}
+		echo "Converting ${paths[${k}]}/${firstrawdir}/${files[0]}..."          
+		dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/${firsttmpdir}
           #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
           mv -v ${tmpdir}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
           bvecs_are=`ls ${tmpdir}/ | grep bvec`
@@ -229,7 +231,7 @@ else
           fi
           rm ${tmpdir}/*
         else
-          echo "${imgnames[${k}]} is a MOCO series... NOT converting it."
+          echo "${imgnames[${k}]} in ${paths[${k}]}/${firstrawdir}/ is a MOCO series... NOT converting it."
         fi
       else
         echo "Multiple files found in ${paths[${k}]}."
@@ -305,7 +307,7 @@ else
     for m in ${otherEPIs[*]} ${ASLs[*]} ${DTIs[*]}; do
       firstrawdir=`ls ${paths[${m}]}/ | head -1`
       files=(`ls ${paths[${m}]}/${firstrawdir}/`)
-      is_MOCO=`strings ${paths[${m}]}/${firstrawdir}/${files[0]} | grep -e "ND.MOCO"`
+      is_MOCO=`strings ${paths[${m}]}/${firstrawdir}/${files[0]} | grep -e '/MOCO/' -e 'ND.MOCO'`
       if [ ${#files[*]} == 1 ]; then
         if [ "${is_MOCO}" == "" ]; then
           if [ -e ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag} ]; then
@@ -316,7 +318,8 @@ else
           for vol in `ls ${paths[${m}]}`; do
             ln -s ${paths[${m}]}/${vol}/* ${tmpdir}/${vol}.IMA
           done
-          firsttmpdir=`ls ${tmpdir}/ | head -1`
+		firsttmpdir=`ls ${tmpdir}/ | head -1`
+		echo "Converting ${paths[${m}]}/${firstrawdir}/${files[0]}..."
           dcm2nii -i N -f Y -p N -e N -d N -g ${isgz} ${tmpdir}/${firsttmpdir}
           #mri_convert ${tmpdir}/1.ACQ.IMA ${outdir}${subjid}/${imgnames[${k}]}_${ord}.nii${gzflag}
           mv -v ${tmpdir}/*.nii${gzflag} ${outdir}${subjid}/${imgnames[${m}]}_${ord}.nii${gzflag}
@@ -327,7 +330,7 @@ else
           fi
           rm ${tmpdir}/*
         else
-          echo "${imgnames[${m}]} is a MOCO series... NOT converting it."
+          echo "${imgnames[${m}]} in ${paths[${m}]}/${firstrawdir}/ is a MOCO series... NOT converting it."
         fi
       else
         echo "Multiple files found in ${paths[${m}]}."
